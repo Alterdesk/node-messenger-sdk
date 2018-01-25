@@ -1,0 +1,18 @@
+{
+  "name": "node-messenger-sdk",
+  "version": "1.0.0",
+  "description": "Node Messenger SDK",
+  "main": "messenger.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.alterdesk.com:other/node-messenger-sdk.git"
+  },
+  "author": "Alterdesk",
+  "license": "ISC",
+  "dependencies": {
+    "form-data": "^2.3.1"
+  }
+}
