@@ -218,49 +218,49 @@ module.exports = {
 
 
         /*
-        *   Check if user has permission, can limit access to "userIds", "coworkers" or "everyone"
+        *   Check if user has permission, can limit access to "everyone", "coworkers", "ids"
         */
 
-        checkPermission(userId, limitTo, limitData, callback) {
-          console.log("checkPermission: userId: " + userId + " limitTo: " + limitTo + " limitData: " + limitData);
+        checkPermission(id, limitTo, limitIds, callback) {
+          console.log("checkPermission: id: " + id + " limitTo: " + limitTo + " limitIds: " + limitIds);
           if(limitTo == "everyone") {
             callback(true);
           } else if(limitTo == "coworkers") {
             if(this.botCompanyId == null) {
-              console.error("Bot company id not set");
+              console.error("Bot company id not set on checkPermission");
               callback(false);
               return;
             }
             var api = this;
-            this.get("users/" + userId, function(success, json) {
+            this.get("users/" + id, function(success, json) {
               if(success) {
                 var userCompanyId = json["company_id"];
                 var isCoworker = api.botCompanyId == userCompanyId && userCompanyId != null;
-                console.log("Coworker check: isCoworker: " + isCoworker + "bot: " + api.botCompanyId + " user: " + userCompanyId);
+                console.log("checkPermission: isCoworker: " + isCoworker + " bot: " + api.botCompanyId + " user: " + userCompanyId);
                 callback(isCoworker);
               } else {
-                console.error("Unable to retrieve user by id on userAllowed: " + userId);
+                console.error("Unable to retrieve user by id on checkPermission: " + id);
                 callback(false);
               }
             });
-          } else if(limitTo == "userIds") {
-            if(limitData == null) {
-              console.error("Limit data not set when using type \"userIds\" on userAllowed");
+          } else if(limitTo == "ids") {
+            if(limitIds == null) {
+              console.error("LimitIds null when using limit \"ids\" on checkPermission");
               callback(false);
               return;
             }
-            for(var index in limitData) {
-              var id = limitData[index];
-              if(userId == id) {
-                console.log("UserId found in allowed user ids list on userAllowed");
+            for(var index in limitIds) {
+              var limitId = limitIds[index];
+              if(id == limitId) {
+                console.log("Id found in allowed ids list on checkPermission");
                 callback(true);
                 return;
               }
             }
-            console.log("UserId not found in allowed user ids list on userAllowed");
+            console.log("Id not found in allowed ids list on checkPermission");
             callback(false);
           } else {
-            console.error("Unknown limit type on userAllowed: \"" + limitTo + "\"");
+            console.error("Unknown limit on checkPermission: \"" + limitTo + "\"");
             callback(false);
           }
         };
