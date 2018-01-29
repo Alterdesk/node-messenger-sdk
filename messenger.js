@@ -38,8 +38,11 @@ module.exports = {
           }
           inviteData["first_name"] = inviteUserData.firstName;
           inviteData["last_name"] = inviteUserData.lastName;
-          if(answers.inviteMessage != null) {
+          if(inviteUserData.inviteMessage != null) {
             inviteData["invite_text"] = inviteUserData.inviteMessage;  // Only used when creating conversation
+          }
+          if(inviteUsersData.auxId != null) {
+            inviteData["aux_id"] = inviteUsersData.auxId;
           }
           var invitePostJson = JSON.stringify(inviteData);
 
@@ -64,6 +67,8 @@ module.exports = {
           settingsPostData["hybrid_messaging"] = groupData.hybridMessaging;
           settingsPostData["members_can_invite"] = groupData.membersCanInvite;
 
+          var hasAuxMembers = false;
+
           // Invite user data
           var inviteUsersData = [];
           for(var inviteIndex in groupData.inviteUsers) {
@@ -76,6 +81,10 @@ module.exports = {
              if(invite.inviteMessage != null) {
                inviteData["invite_text"] = invite.inviteMessage;  // Only used when creating conversation
              }
+             if(invite.auxId != null) {
+               inviteData["aux_id"] = invite.auxId;
+               hasAuxMembers = true;
+             }
              inviteData["invite_type"] = invite.inviteType;
              inviteUsersData.push(inviteData);
           }
@@ -87,19 +96,44 @@ module.exports = {
           groupPostData["settings"] = settingsPostData;
           groupPostData["subject"] = groupData.subject;
 
+          if(groupData.auxId != null) {
+            groupPostData["aux_id"] = groupData.auxId;
+            if(hasAuxMembers) {
+              groupPostData["aux_members"] = true;
+            }
+          }
+
           var groupPostJson = JSON.stringify(groupPostData);
-          this.post("groupchats", groupPostJson, callback, groupData.overrideToken);
+          var postUrl;
+          if(groupData.auxId != null) {
+            postUrl = "aux/groupchats";
+          } else {
+            postUrl = "groupchats";
+          }
+          this.post(postUrl, groupPostJson, callback, groupData.overrideToken);
         };
 
-        sendGroupMessage(groupId, messageData, callback) {
+        sendGroupMessage(messageData, callback) {
             var messagePostData = {};
             if(messageData.attachmentPaths != null) {
               messagePostData["message"] = messageData.message;
-              this.postMultipart("groupchats/" + groupId + "/attachments", messagePostData, messageData.attachmentPaths, callback, messageData.overrideToken);
+              var postUrl;
+              if(messageData.groupAuxId) {
+                postUrl = "aux/groupchats/" + messageData.groupAuxId + "/attachments";
+              } else {
+                postUrl = "groupchats/" + messageData.groupId + "/attachments";
+              }
+              this.postMultipart(postUrl, messagePostData, messageData.attachmentPaths, callback, messageData.overrideToken);
             } else {
               messagePostData["body"] = messageData.message;
               var messageJson = JSON.stringify(messagePostData);
-              this.post("groupchats/" + groupId + "/messages", messageJson, callback, messageData.overrideToken);
+              var postUrl;
+              if(messageData.groupAuxId) {
+                postUrl = "aux/groupchats/" + messageData.groupAuxId + "/messages";
+              } else {
+                postUrl = "groupchats/" + messageData.groupId + "/messages";
+              }
+              this.post(postUrl, messageJson, callback, messageData.overrideToken);
             }
         };
 
