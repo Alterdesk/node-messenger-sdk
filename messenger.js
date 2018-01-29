@@ -196,50 +196,37 @@ module.exports = {
         *   API destination settings
         */
 
-        setApiDestination(protocol, domain, version, port) {
+        configure(protocol, domain, version, port, token) {
           this.apiProtocol = protocol;// = "https";
           this.apiDomain = domain;// = "localapi.alterdesk.com";
           this.apiVersion = version;// = "v1";
           this.apiPort = port;// = 443;
           this.apiUrl = protocol + "://" + domain + "/" + version + "/";
-          console.log("API Destination URL: " + this.apiUrl);
-        };
-
-        setApiToken(token) {
           this.apiToken = token;
+          console.log("API Destination URL: " + this.apiUrl + " Token: " + token);
+
+          var api = this;
+          this.get("me", function(success, json) {
+            if(success) {
+              api.botCompanyId = json["company_id"];
+              console.log("Bot company id: " + api.botCompanyId);
+            } else {
+              console.error("Unable to retrieve bot account");
+            }
+          });
         };
 
 
         /*
-        *   Limit bot access to userIds, coworkers or everyone
+        *   Check if user has permission, can limit access to "userIds", "coworkers" or "everyone"
         */
 
-        limitUsage(limitType, limitData) {
-          this.limitType = limitType;
-          this.limitData = limitData;
-
-          if(limitType == "coworkers") {
-            var api = this;
-            this.get("me", function(success, json) {
-              if(success) {
-                api.botCompanyId = json["company_id"];
-                console.log("Bot company id: " + api.botCompanyId);
-              } else {
-                console.error("Unable to retrieve bot account");
-              }
-            });
-          }
-        };
-
-        userAllowed(userId, callback) {
-          console.log("userAllowed: userId: " + userId + " limitType: " + this.limitType + " limitData: " + this.limitData);
-          if(this.limitType == null) {
-            console.error("Usage limit not configured");
-            callback(false);
-          } else if(this.limitType == "everyone") {
+        checkPermission(userId, limitTo, limitData, callback) {
+          console.log("checkPermission: userId: " + userId + " limitTo: " + limitTo + " limitData: " + limitData);
+          if(limitTo == "everyone") {
             callback(true);
-          } else if(this.limitType == "coworkers") {
-            if(api.botCompanyId == null) {
+          } else if(limitTo == "coworkers") {
+            if(this.botCompanyId == null) {
               console.error("Bot company id not set");
               callback(false);
               return;
@@ -256,14 +243,14 @@ module.exports = {
                 callback(false);
               }
             });
-          } else if(this.limitType == "userIds") {
-            if(this.limitData == null) {
+          } else if(limitTo == "userIds") {
+            if(limitData == null) {
               console.error("Limit data not set when using type \"userIds\" on userAllowed");
               callback(false);
               return;
             }
-            for(var index in this.limitData) {
-              var id = this.limitData[index];
+            for(var index in limitData) {
+              var id = limitData[index];
               if(userId == id) {
                 console.log("UserId found in allowed user ids list on userAllowed");
                 callback(true);
@@ -273,7 +260,7 @@ module.exports = {
             console.log("UserId not found in allowed user ids list on userAllowed");
             callback(false);
           } else {
-            console.error("Unknown limit type on userAllowed: \"" + this.limitType + "\"");
+            console.error("Unknown limit type on userAllowed: \"" + limitTo + "\"");
             callback(false);
           }
         };
