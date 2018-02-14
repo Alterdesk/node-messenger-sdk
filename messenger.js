@@ -17,7 +17,14 @@
 // Requirements
 var FormData = require('form-data');
 var HttpClient = require('scoped-http-client');
+var UuidV1 = require('uuid/v1');
 var FileSystem = require('fs');
+var Mkdirp = require('mkdirp');
+var Request = require('request');
+var Path = require('path');
+var OS = require('os');
+
+var tmpDir = Path.resolve(OS.tmpdir(), 'messenger-downloads');
 
 module.exports = {
 
@@ -27,6 +34,44 @@ module.exports = {
         /*
         *   High level messenger API helper functions
         */
+
+        getAttachmentUrl(chatId, attachmentId, isGroup, isAux, callback) {
+//          var attachmentData = {};
+//          attachmentData["headers"] = false;
+//          var attachmentPostJson = JSON.stringify(attachmentData);
+          var methodPrefix = "";
+          if(isAux) {
+            methodPrefix += "aux/"
+          }
+          if(isGroup) {
+            methodPrefix += "groupchats/";
+          } else {
+            methodPrefix += "conversations/";
+          }
+          this.get(methodPrefix + chatId + "/attachments/" + attachmentId, callback);
+        };
+
+        getChatPdfUrl(chatId, isGroup, isAux, startDate, endDate, callback) {
+//          var pdfData = {};
+//          if(startDate != null) {
+//            pdfData["start_date"] = startDate;
+//          }
+//          if(endDate) {
+//            pdfData["end_date"] = endDate;
+//          }
+//          pdfData["headers"] = true;
+//          var pdfPostJson = JSON.stringify(pdfData);
+          var methodPrefix = "";
+          if(isAux) {
+            methodPrefix += "aux/"
+          }
+          if(isGroup) {
+            methodPrefix += "groupchats/";
+          } else {
+            methodPrefix += "conversations/";
+          }
+          this.get(methodPrefix + chatId + "/pdf", callback);
+        };
 
         invite(inviteUserData, callback) {
           var inviteData = {};
@@ -149,35 +194,50 @@ module.exports = {
         get(getUrl, callback, overrideToken) {
           console.log("Messenger::get() >> " + getUrl);
           var token = overrideToken || this.apiToken;
-          this.http(this.apiUrl + getUrl).header('Authorization', 'Bearer ' + token).header('Content-Type', 'application/json; charset=UTF-8').get()(function(err, resp, body) {
-            if (resp.statusCode === 200) {
-              console.log("Messenger::get() << " + getUrl + ": " + body);
-              var json = JSON.parse(body);
-              callback(true, json);
-            } else {
-              console.error("Messenger::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
-              callback(false, null);
-            }
-          });
+          try {
+            this.http(this.apiUrl + getUrl).header('Authorization', 'Bearer ' + token).header('Content-Type', 'application/json; charset=UTF-8').get()(function(err, resp, body) {
+              if (resp.statusCode === 200) {
+                console.log("Messenger::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
+                var json = JSON.parse(body);
+                callback(true, json);
+              } else if (resp.statusCode === 302) {
+                console.log("Messenger::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
+                var json = JSON.parse(body);
+                var cookie = resp.headers["set-cookie"];
+                callback(true, json, cookie);
+              } else {
+                console.error("Messenger::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
+                callback(false, null);
+              }
+            });
+          } catch(exception) {
+            console.error("Messenger::get() << " + getUrl + ": " + exception);
+            callback(false, null);
+          }
         }
 
         post(postUrl, postJson, callback, overrideToken) {
-          console.log("Messenger::post() >>" + postUrl + ": " + postJson);
+          console.log("Messenger::post() >> " + postUrl + ": " + postJson);
           var token = overrideToken || this.apiToken;
-          this.http(this.apiUrl + postUrl).header('Authorization', 'Bearer ' + token).header('Content-Type', 'application/json; charset=UTF-8').post(postJson)(function(err, resp, body) {
-            if(resp.statusCode === 201) {
-              console.log("Messenger::post() << " + postUrl + ": " + body);
-              var json = JSON.parse(body);
-              callback(true, json);
-            } else {
-              console.error("Messenger::post() << " + postUrl + ": " + resp.statusCode + ": " + body);
-              callback(false, null);
-            }
-          });
+          try {
+            this.http(this.apiUrl + postUrl).header('Authorization', 'Bearer ' + token).header('Content-Type', 'application/json; charset=UTF-8').post(postJson)(function(err, resp, body) {
+              if(resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
+                console.log("Messenger::post() << " + postUrl + ": " + resp.statusCode + ": " + body);
+                var json = JSON.parse(body);
+                callback(true, json);
+              } else {
+                console.error("Messenger::post() << " + postUrl + ": " + resp.statusCode + ": " + body);
+                callback(false, null);
+              }
+            });
+          } catch(exception) {
+                console.error("Messenger::post() << " + postUrl + ": " + exception);
+                callback(false, null);
+          }
         };
 
         postMultipart(postUrl, postData, attachmentPaths, callback, overrideToken) {
-          console.log("Messenger::postMultipart() >> " + postUrl + " formData: " + postData);
+          console.log("Messenger::postMultipart() >> " + postUrl + " formData: " + postData + " attachmentPaths: ", attachmentPaths);
           var token = overrideToken || this.apiToken;
           // npm install --save form-data (https://github.com/form-data/form-data)
           var formData = new FormData();
@@ -213,8 +273,8 @@ module.exports = {
               });
               // Incoming data ended
               res.on('end', function() {
-                if(res.statusCode === 201) {
-                  console.log("Messenger::postMultipart() << " + postUrl + ": " + body);
+                if(res.statusCode === 200 || res.statusCode === 201 || res.statusCode === 204 || res.statusCode === 304) {
+                  console.log("Messenger::postMultipart() << " + postUrl + ": " + res.statusCode + ": " + body);
                   var json = JSON.parse(body);
                   callback(true, json);
                 } else {
@@ -223,6 +283,55 @@ module.exports = {
                 }
               });
             });
+        };
+
+        download(url, name, mime, cookie, callback, overrideToken) {
+          console.log("Messenger::download() >> " + url + " name: " + name + " mime: " + mime + " cookie: " + cookie);
+          var token = overrideToken || this.apiToken;
+          var auth = "Bearer " + token;
+
+          Mkdirp(tmpDir, function(mkdirError) {
+            if(mkdirError != null) {
+                console.log("Unable to create temporary folder: " + tmpDir)
+                return;
+            }
+
+            var path = tmpDir + "/" + UuidV1() + "_" + name;
+            var req = Request({
+              uri: url,
+              method: 'get',
+              headers: {
+                  'Authorization': auth,
+                  'Accept': mime,
+                  'Cookie': cookie
+              }
+            });
+
+            var res;
+
+            req.on('response', function(response) {
+              res = response;
+            });
+
+            req.on('error', function(err) {
+              console.log("Messenger::download() << " + url + ": " + err);
+              callback(false, null);
+            });
+
+            req.on('end', function() {
+              if(res == null) {
+                callback(false, null);
+              } else if(res.statusCode == 200) {
+                console.log("Messenger::download() << " + url + ": " + res.statusCode);
+                callback(true, path);
+              } else {
+                console.error("Messenger::download() << " + url + ": " + res.statusCode);
+                callback(false, null);
+              }
+            });
+
+            req.pipe(FileSystem.createWriteStream(path));
+          });
         };
 
 
@@ -335,4 +444,7 @@ module.exports = {
         this.attachmentPaths.push(path);
       };
     },
+
+    AttachmentData: class {
+    }
 }
