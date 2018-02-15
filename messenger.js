@@ -446,5 +446,8 @@ module.exports = {
     },
 
     AttachmentData: class {
+    },
+
+    MentionData: class {
     }
 }
