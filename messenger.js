@@ -157,26 +157,25 @@ module.exports = {
           this.post(postUrl, groupPostJson, callback, groupData.overrideToken);
         };
 
-        sendGroupMessage(messageData, callback) {
+        sendMessage(messageData, callback) {
             var messagePostData = {};
+            var methodPrefix = "";
+            if(messageData.isAux) {
+              methodPrefix += "aux/"
+            }
+            if(messageData.isGroup) {
+              methodPrefix += "groupchats/";
+            } else {
+              methodPrefix += "conversations/";
+            }
             if(messageData.attachmentPaths != null) {
               messagePostData["message"] = messageData.message;
-              var postUrl;
-              if(messageData.groupAuxId) {
-                postUrl = "aux/groupchats/" + messageData.groupAuxId + "/attachments";
-              } else {
-                postUrl = "groupchats/" + messageData.groupId + "/attachments";
-              }
+              var postUrl = methodPrefix + messageData.chatId + "/attachments";
               this.postMultipart(postUrl, messagePostData, messageData.attachmentPaths, callback, messageData.overrideToken);
             } else {
               messagePostData["body"] = messageData.message;
               var messageJson = JSON.stringify(messagePostData);
-              var postUrl;
-              if(messageData.groupAuxId) {
-                postUrl = "aux/groupchats/" + messageData.groupAuxId + "/messages";
-              } else {
-                postUrl = "groupchats/" + messageData.groupId + "/messages";
-              }
+              var postUrl = methodPrefix + messageData.chatId + "/messages";
               this.post(postUrl, messageJson, callback, messageData.overrideToken);
             }
         };
