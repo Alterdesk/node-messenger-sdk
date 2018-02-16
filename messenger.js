@@ -18,6 +18,7 @@
 var FormData = require('form-data');
 var HttpClient = require('scoped-http-client');
 var UuidV1 = require('uuid/v1');
+var Moment = require('moment');
 var FileSystem = require('fs');
 var Mkdirp = require('mkdirp');
 var Request = require('request');
@@ -36,9 +37,8 @@ module.exports = {
         */
 
         getAttachmentUrl(chatId, attachmentId, isGroup, isAux, callback) {
-//          var attachmentData = {};
-//          attachmentData["headers"] = false;
-//          var attachmentPostJson = JSON.stringify(attachmentData);
+          var attachmentData = {};
+          attachmentData["headers"] = false;
           var methodPrefix = "";
           if(isAux) {
             methodPrefix += "aux/"
@@ -48,19 +48,18 @@ module.exports = {
           } else {
             methodPrefix += "conversations/";
           }
-          this.get(methodPrefix + chatId + "/attachments/" + attachmentId, callback);
+          this.get(methodPrefix + chatId + "/attachments/" + attachmentId + this.toGetParameters(attachmentData), callback);
         };
 
         getChatPdfUrl(chatId, isGroup, isAux, startDate, endDate, callback) {
-//          var pdfData = {};
-//          if(startDate != null) {
-//            pdfData["start_date"] = startDate;
-//          }
-//          if(endDate) {
-//            pdfData["end_date"] = endDate;
-//          }
-//          pdfData["headers"] = true;
-//          var pdfPostJson = JSON.stringify(pdfData);
+          var pdfData = {};
+          if(startDate != null) {
+            pdfData["start_date"] = this.dateToString(startDate);
+          }
+          if(endDate) {
+            pdfData["end_date"] = this.dateToString(endDate);
+          }
+          pdfData["headers"] = false;
           var methodPrefix = "";
           if(isAux) {
             methodPrefix += "aux/"
@@ -70,7 +69,7 @@ module.exports = {
           } else {
             methodPrefix += "conversations/";
           }
-          this.get(methodPrefix + chatId + "/pdf", callback);
+          this.get(methodPrefix + chatId + "/pdf" + this.toGetParameters(pdfData), callback);
         };
 
         invite(inviteUserData, callback) {
@@ -406,6 +405,28 @@ module.exports = {
             console.error("Unknown limit on checkPermission: \"" + limitTo + "\"");
             callback(false);
           }
+        };
+
+        toGetParameters(data) {
+           var parameters = "";
+           var index = 0;
+           for(var field in data) {
+             if(index++ == 0) {
+               parameters += "?";
+             } else {
+               parameters += "&";
+             }
+             parameters += encodeURIComponent(field) + "=" + encodeURIComponent(data[field]);
+           };
+           return parameters;
+        };
+
+        dateToString(date) {
+            return Moment(date).utc().format("YYYY-MM-DDTHH:mm:ss") + "Z+00:00";
+        };
+
+        parseDate(dateString) {
+            return Moment(dateString).unix();
         };
     },
 
