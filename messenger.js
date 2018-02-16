@@ -288,13 +288,15 @@ module.exports = {
           var token = overrideToken || this.apiToken;
           var auth = "Bearer " + token;
 
-          Mkdirp(tmpDir, function(mkdirError) {
+          var tmpDirPath = tmpDir + "/" + UuidV1();
+
+          Mkdirp(tmpDirPath, function(mkdirError) {
             if(mkdirError != null) {
-                console.log("Unable to create temporary folder: " + tmpDir)
+                console.log("Unable to create temporary folder: " + tmpDirPath)
                 return;
             }
 
-            var path = tmpDir + "/" + UuidV1() + "_" + name;
+            var path = tmpDirPath + "/" + name;
             var req = Request({
               uri: url,
               method: 'get',
