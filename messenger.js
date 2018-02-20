@@ -194,7 +194,7 @@ module.exports = {
           var token = overrideToken || this.apiToken;
           try {
             this.http(this.apiUrl + getUrl).header('Authorization', 'Bearer ' + token).header('Content-Type', 'application/json; charset=UTF-8').get()(function(err, resp, body) {
-              if (resp.statusCode === 200) {
+              if (resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
                 console.log("Messenger::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
                 var json = JSON.parse(body);
                 callback(true, json);
