@@ -408,6 +408,7 @@ module.exports = {
           }
         };
 
+        // Format data to encoded get parameters
         toGetParameters(data) {
            var parameters = "";
            var index = 0;
@@ -422,10 +423,12 @@ module.exports = {
            return parameters;
         };
 
+        // Format a date to a timestamp
         dateToString(date) {
             return Moment(date).utc().format("YYYY-MM-DDTHH:mm:ss") + "Z+00:00";
         };
 
+        // Parse a timestamp to a date
         parseDate(dateString) {
             return Moment(dateString).unix();
         };
@@ -457,6 +460,7 @@ module.exports = {
         };
     },
 
+    // Data container for sending messages
     SendMessageData: class {
       constructor() {
         this.attachmentPaths = [];
@@ -467,9 +471,11 @@ module.exports = {
       };
     },
 
+    // Data container for sending attachments
     AttachmentData: class {
     },
 
+    // Data container for mentions
     MentionData: class {
     }
 }
