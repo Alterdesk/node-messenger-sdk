@@ -16,6 +16,7 @@ messengerApi.configure("https", "api.alterdesk.com", "v1", 443, "<ALTERDESK_API_
 ```
 
 ### Send a message
+Send a message with optional attachments in to a chat
 ```javascript
 // Create a message data instance
 var messageData = new Messenger.SendMessageData();
@@ -43,10 +44,11 @@ messengerApi.sendMessage(messageData, function(success, json) {
 ```
 
 ### Invite a user
-To invite a user, first create an InviteUserData object and set the required fields
+To invite a coworker, contact or private user onto the messenger
 ```javascript
 // Create a invite user data instance
 var inviteData = new Messenger.InviteUserData();
+
 // First name of the user (optional)
 inviteData.firstName = answers.firstName;
 // Last name of the user (optional)
@@ -73,6 +75,7 @@ To invite a user for a one-to-one chat use the following
 ````javascript
 // Send a message with the invite (optional)
 inviteData.inviteMessage = answers.inviteMessage;
+
 // Invite the user and parse result in callback
 messengerApi.invite(inviteData, function(success, function(success, json) {
     console.log("Invite user successful: " + success);
@@ -86,6 +89,7 @@ When inviting a user for a group chat, set the following fields and use createGr
 ```javascript
 // Create a one-to-one chat for this user
 inviteData.createConversation = false;
+
 // Invite users in the group (see "Create a group chat" below)
 groupData.addInvite(inviteData);
 ```
@@ -129,6 +133,7 @@ messengerApi.createGroup(groupData, function(success, json) {
 ```javascript
 // Create an attachment data instance
 var attachmentData = new Messenger.AttachmentData();
+
 // Attachment id
 attachmentData.id = "<ATTACHMENT_ID>";
 // Chat id
@@ -141,6 +146,7 @@ attachmentData.isAux = false;
 attachmentData.name = "picture.png";
 // MIME type of the attachment
 attachmentData.mime = "image/png";
+
 // Retrieve attachment download url
 messengerApi.getAttachmentUrl(attachmentData, function(success, json, cookie) {
     console.log("Retrieve attachment download url successful: " + success);
@@ -162,6 +168,7 @@ messengerApi.getAttachmentUrl(attachmentData, function(success, json, cookie) {
 ```javascript
 // Create a PDF data instance
 var pdfData = new Messenger.PdfData();
+
 // Chat id
 pdfData.chatId = "<CHAT_ID>";
 // Is the chat a group
@@ -174,6 +181,8 @@ pdfData.startDate = messengerApi.parseDate("2017-12-31T13:05:32");
 pdfData.endDate = null;
 // Filename of the downloaded pdf
 pdfData.name = "chatLog.pdf";
+
+// Retrieve chat pdf download url
 messengerApi.getChatPdfUrl(pdfData, function(success, json, cookie) {
     console.log("Retrieve pdf download url successful: " + success);
     if(json != null) {
