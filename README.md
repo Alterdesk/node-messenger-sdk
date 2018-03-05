@@ -9,6 +9,7 @@ Create a Messenger API instance, the constructor needs the following
 * API version *(default: "v1")*
 * API port *(default: "443")*
 * API OAuth 2.0 token
+
 ```javascript
 messengerApi = new Messenger.Api();
 messengerApi.configure("https", "api.alterdesk.com", "v1", 443, <ALTERDESK_API_TOKEN>);
@@ -85,7 +86,7 @@ When inviting a user for a group chat, set the following fields and use createGr
 ```javascript
 // Create a one-to-one chat for this user
 inviteData.createConversation = false;
-// Invite users in the group
+// Invite users in the group (see "Create a group chat" below)
 groupData.addInvite(inviteData);
 ```
 
@@ -126,6 +127,35 @@ messengerApi.createGroup(groupData, function(success, json) {
 
 ### Download an attachment
 ```javascript
+// Create an attachment data instance
+var attachmentData = new Messenger.AttachmentData();
+// Attachment id
+attachmentData.id = <ATTACHMENT_ID>;
+// Chat id
+attachmentData.chatId = <CHAT_ID>;
+// Is the chat a group
+attachmentData.isGroup = true;
+// Is it an auxiliary chat
+attachmentData.isAux = false;
+// Filename to use for download
+attachmentData.name = "picture.png";
+// MIME type of the attachment
+attachmentData.mime = "image/png";
+// Retrieve attachment download url
+messengerApi.getAttachmentUrl(attachmentData, function(success, json, cookie) {
+    console.log("Retrieve attachment download url successful: " + success);
+    if(json != null && cookie != null) {
+        var url = json["link"];
+        var name = attachmentData.name;
+        var mime = attachmentData.mime;
+        messengerApi.download(url, name, mime, cookie, function(downloaded, path) {
+            if(downloaded) {
+                console.log("attachment: Path: " + path);
+                attachmentData.path = path;
+            }
+        });
+    }
+});
 ```
 
 ### Download chat in pdf format
@@ -133,6 +163,8 @@ messengerApi.createGroup(groupData, function(success, json) {
 ```
 
 ### Other API calls
+To use other API functions that are mentioned above, you can use the following code:
+
 Get
 ```javascript
 ```
