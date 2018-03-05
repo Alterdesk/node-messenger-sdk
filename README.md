@@ -12,7 +12,7 @@ Create a Messenger API instance, the constructor needs the following
 
 ```javascript
 messengerApi = new Messenger.Api();
-messengerApi.configure("https", "api.alterdesk.com", "v1", 443, <ALTERDESK_API_TOKEN>);
+messengerApi.configure("https", "api.alterdesk.com", "v1", 443, "<ALTERDESK_API_TOKEN>");
 ```
 
 ### Send a message
@@ -31,7 +31,7 @@ messageData.isGroup = isChatGroup;
 // Optional auxiliary id for the chat
 messageData.isAux = isChatAux;
 // Use an alternative API token for this call (optional)
-messageData.overrideToken = <OPTIONAL_ALTERNATIVE_API_TOKEN>;
+messageData.overrideToken = "<OPTIONAL_ALTERNATIVE_API_TOKEN>";
 
 // Send the message and parse result in callback
 messengerApi.sendMessage(messageData, function(success, json) {
@@ -98,7 +98,7 @@ var groupData = new Messenger.CreateGroupData();
 // Set the chat subject
 groupData.subject = "My chat name"
 // Set an auxiliary id for this chat
-groupData.auxId = <MY_AUX_ID>
+groupData.auxId = "<MY_AUX_ID>"
 // Optional members to add
 groupData.memberIds = ["<MEMBER_ID_1>", "<MEMBER_ID_2>", "<MEMBER_ID_3>"];
 // Allow contacts in the group (optional)
@@ -114,7 +114,7 @@ groupData.membersCanInvite = true;
 // Invite users in the group (optional)
 groupData.addInvite(inviteData);
 // Use an alternative API token for this call (optional)
-groupData.overrideToken = <OPTIONAL_ALTERNATIVE_API_TOKEN>;
+groupData.overrideToken = "<OPTIONAL_ALTERNATIVE_API_TOKEN>";
 
 // Create the group chat and parse result in callback
 messengerApi.createGroup(groupData, function(success, json) {
@@ -130,14 +130,14 @@ messengerApi.createGroup(groupData, function(success, json) {
 // Create an attachment data instance
 var attachmentData = new Messenger.AttachmentData();
 // Attachment id
-attachmentData.id = <ATTACHMENT_ID>;
+attachmentData.id = "<ATTACHMENT_ID>";
 // Chat id
-attachmentData.chatId = <CHAT_ID>;
+attachmentData.chatId = "<CHAT_ID>";
 // Is the chat a group
 attachmentData.isGroup = true;
 // Is it an auxiliary chat
 attachmentData.isAux = false;
-// Filename to use for download
+// Filename of the downloaded attachment
 attachmentData.name = "picture.png";
 // MIME type of the attachment
 attachmentData.mime = "image/png";
@@ -160,6 +160,32 @@ messengerApi.getAttachmentUrl(attachmentData, function(success, json, cookie) {
 
 ### Download chat in pdf format
 ```javascript
+// Create a PDF data instance
+var pdfData = new Messenger.PdfData();
+// Chat id
+pdfData.chatId = "<CHAT_ID>";
+// Is the chat a group
+pdfData.isGroup = false;
+// Is auxiliary chat
+pdfData.isAux = true;
+// Starting date of generated PDF
+pdfData.startDate = messengerApi.parseDate("2017-12-31T13:05:32");
+// Ending date of generated PDF
+pdfData.endDate = null;
+// Filename of the downloaded pdf
+pdfData.name = "chatLog.pdf";
+messengerApi.getChatPdfUrl(pdfData, function(success, json, cookie) {
+    console.log("Retrieve pdf download url successful: " + success);
+    if(json != null) {
+        var url = json["link"];
+        messengerApi.download(url, pdfData.name, "application/pdf", cookie, function(downloaded, path) {
+            if(downloaded) {
+                console.log("pdf: Path: " + path);
+                pdfData.path = path;
+            }
+        }
+    }
+});
 ```
 
 ### Other API calls
