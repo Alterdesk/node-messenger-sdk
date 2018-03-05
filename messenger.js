@@ -36,40 +36,40 @@ module.exports = {
         *   High level messenger API helper functions
         */
 
-        getAttachmentUrl(chatId, attachmentId, isGroup, isAux, callback) {
-          var attachmentData = {};
-          attachmentData["headers"] = false;
+        getAttachmentUrl(attachmentData, callback) {
+          var getData = {};
+          getData["headers"] = false;
           var methodPrefix = "";
-          if(isAux) {
+          if(attachmentData.isAux) {
             methodPrefix += "aux/"
           }
-          if(isGroup) {
+          if(attachmentData.isGroup) {
             methodPrefix += "groupchats/";
           } else {
             methodPrefix += "conversations/";
           }
-          this.get(methodPrefix + chatId + "/attachments/" + attachmentId + this.toGetParameters(attachmentData), callback);
+          this.get(methodPrefix + attachmentData.chatId + "/attachments/" + attachmentData.id + this.toGetParameters(getData), callback);
         };
 
-        getChatPdfUrl(chatId, isGroup, isAux, startDate, endDate, callback) {
-          var pdfData = {};
-          if(startDate != null) {
-            pdfData["start_date"] = this.dateToString(startDate);
+        getChatPdfUrl(pdfData, callback) {
+          var getData = {};
+          if(pdfData.startDate != null) {
+            getData["start_date"] = this.dateToString(pdfData.startDate);
           }
-          if(endDate) {
-            pdfData["end_date"] = this.dateToString(endDate);
+          if(pdfData.endDate != null) {
+            getData["end_date"] = this.dateToString(pdfData.endDate);
           }
-          pdfData["headers"] = false;
+          getData["headers"] = false;
           var methodPrefix = "";
-          if(isAux) {
+          if(pdfData.isAux) {
             methodPrefix += "aux/"
           }
-          if(isGroup) {
+          if(pdfData.isGroup) {
             methodPrefix += "groupchats/";
           } else {
             methodPrefix += "conversations/";
           }
-          this.get(methodPrefix + chatId + "/pdf" + this.toGetParameters(pdfData), callback);
+          this.get(methodPrefix + pdfData.chatId + "/pdf" + this.toGetParameters(getData), callback);
         };
 
         invite(inviteUserData, callback) {
@@ -470,8 +470,12 @@ module.exports = {
       };
     },
 
-    // Data container for sending attachments
+    // Data container for sending/downloading attachments
     AttachmentData: class {
+    },
+
+    // Data container for downloading chat pdf
+    PdfData: class {
     },
 
     // Data container for mentions
