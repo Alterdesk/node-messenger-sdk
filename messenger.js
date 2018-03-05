@@ -74,7 +74,6 @@ module.exports = {
 
         invite(inviteUserData, callback) {
           var inviteData = {};
-          inviteData["create_conversation"] = inviteUserData.createConversation;
           if(inviteUserData.email != null) {
             inviteData["email"] = inviteUserData.email;
           } else if(inviteUsersData.phoneNumber != null) {
