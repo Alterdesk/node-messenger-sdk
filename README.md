@@ -17,7 +17,7 @@ Create a Messenger API instance, the constructor needs the following
 * API port *(default: "443")*
 * API OAuth 2.0 token
 
-Initialize when [environment variables](#Environment variables) are set
+Initialize when [environment variables](#environment-variables) are set
 ```javascript
 var messenger = require('node-messenger-sdk');
 
