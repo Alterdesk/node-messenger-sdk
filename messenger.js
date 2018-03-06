@@ -336,12 +336,12 @@ module.exports = {
         *   API destination settings
         */
 
-        configure(protocol, domain, version, port, token) {
-            this.apiProtocol = protocol || process.env.HUBOT_ALTERDESK_TRANSPORT;   // "https"
-            this.apiDomain = domain || process.env.HUBOT_ALTERDESK_DOMAIN;          // "api.alterdesk.com"
-            this.apiVersion = version || process.env.HUBOT_ALTERDESK_VERSION;       // "v1"
-            this.apiPort = port || process.env.HUBOT_ALTERDESK_PORT;                // 443
-            this.apiToken = token || process.env.HUBOT_ALTERDESK_TOKEN;
+        configure(token, protocol, domain, version, port) {
+            this.apiToken = token || process.env.NODE_ALTERDESK_TOKEN;
+            this.apiProtocol = protocol || process.env.NODE_ALTERDESK_TRANSPORT || "https";
+            this.apiDomain = domain || process.env.NODE_ALTERDESK_DOMAIN || "api.alterdesk.com";
+            this.apiVersion = version || process.env.NODE_ALTERDESK_VERSION || "v1";
+            this.apiPort = port || process.env.NODE_ALTERDESK_PORT || 443;
             this.apiUrl = this.apiProtocol + "://" + this.apiDomain + "/" + this.apiVersion + "/";
             console.log("API Destination URL: " + this.apiUrl + " Token: " + token);
 
