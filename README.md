@@ -1,6 +1,14 @@
 # Node Messenger SDK
 Messenger SDK for [API](https://api.alterdesk.com/documentation) calls from a node project.
 
+Dependencies
+* [form-data](https://github.com/form-data/form-data)
+* [mkdirp](https://github.com/substack/node-mkdirp)
+* [moment](https://github.com/moment/moment)
+* [request](https://github.com/request/request)
+* [scoped-http-client](https://github.com/technoweenie/node-scoped-http-client)
+* [uuid](https://github.com/kelektiv/node-uuid)
+
 ## Initialize Messenger API
 Create a Messenger API instance, the constructor needs the following
 * API protocol *(default: "https")*
