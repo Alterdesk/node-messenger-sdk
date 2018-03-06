@@ -1,8 +1,7 @@
 # Node Messenger SDK
 Messenger SDK for [API](https://api.alterdesk.com/documentation) calls from a node project.
 
-## Using the Messenger API
-### Initialize Messenger API
+## Initialize Messenger API
 Create a Messenger API instance, the constructor needs the following
 * API protocol *(default: "https")*
 * API domain *(default: "api.alterdesk.com")*
@@ -15,7 +14,7 @@ messengerApi = new Messenger.Api();
 messengerApi.configure("https", "api.alterdesk.com", "v1", 443, "<ALTERDESK_API_TOKEN>");
 ```
 
-### Send a message
+## Send a message
 Send a message with or without attachments in to a chat
 ```javascript
 // Create a message data instance
@@ -43,7 +42,7 @@ messengerApi.sendMessage(messageData, function(success, json) {
 });
 ```
 
-### Invite a user
+## Invite a user
 To invite a coworker, contact or private user onto the messenger
 ```javascript
 // Create a invite user data instance
@@ -94,7 +93,7 @@ inviteData.createConversation = false;
 groupData.addInvite(inviteData);
 ```
 
-### Create a group chat
+## Create a group chat
 Create a group chat with optional members, invitations and settings
 ```javascript
 // Create a group data instance
@@ -130,7 +129,7 @@ messengerApi.createGroup(groupData, function(success, json) {
 });
 ```
 
-### Download an attachment
+## Download an attachment
 To download an attachment, first retrieve the URL and cookie to use for download, then use download() to download the 
 attachment.
 ```javascript
@@ -167,7 +166,7 @@ messengerApi.getAttachmentUrl(attachmentData, function(success, json, cookie) {
 });
 ```
 
-### Download chat in PDF format
+## Download chat in PDF format
 To download a chat PDF, determine the date range to use for PDF generation and get the URL and cookie to use for 
 download, then use download() to download the file.
 ```javascript
@@ -202,11 +201,11 @@ messengerApi.getChatPdfUrl(pdfData, function(success, json, cookie) {
 });
 ```
 
-### Using other API functions
+## Using other API functions
 The [API](https://api.alterdesk.com/documentation) has more functions than described above, below are some example
 usages of get(), post() and postMultipart();
 
-#### Get
+### Get
 Get has the following parameters
 * URL
 * Callback function
@@ -226,14 +225,14 @@ Retrieve a page of contacts *(GET with parameters)*
 var getData = {};
 getData["page"] = 0;
 getData["amount"] = 20;
-this.get("me/contacts" + control.toGetParameters(getData), function(success, json) {
+this.get("me/contacts" + messengerApi.toGetParameters(getData), function(success, json) {
    if(json != null) {
        // Parse result
    }                                    
 });
 ```
 
-#### Post
+### Post
 Post has the following parameters
 * URL
 * JSON parameter string
@@ -274,7 +273,7 @@ this.post("company/import", postJson, function(success, json) {
 });
 ```
 
-#### Post Multipart
+### Post Multipart
 Post has the following parameters
 * URL
 * Post data object
@@ -301,4 +300,43 @@ this.postMultipart(postUrl, postData, filePaths, function(success, json) {
         // Parse result
     }                                    
 });
+```
+
+## Extra helper functions
+
+### Check permission for a user
+To easily add permission checks to your script you can use checkPermission(), for example check if a user is a coworker.
+```javascript
+messengerApi.checkPermission("<USER_ID>", "coworkers", null, function(allowed) {
+    if(allowed) {
+        // User is a coworker
+    } else {
+        // User is not a coworker
+    }
+}
+```
+
+### Data object to GET parameters
+To easily convert a data object to GET parameters, use toGetParameters() to get a string suffix for your GET url.
+```javascript
+// Get data object
+var getData = {};
+getData["first"] = "one";
+getData["second"] = "two";
+// Format string as "?first=one&second=two"
+var param = messengerApi.toGetParameters(getData);
+```
+
+### Date to timestamp
+To convert a Date object to a timestamp string, use dateToString().
+```javascript
+var date = Date.now();
+var timestamp = messengerApi.dateToString(date);
+```
+
+### Timestamp to Date
+To convert a timestamp string to a Date object, use parseDate();
+```javascript
+var timestamp = "2017-12-31T13:05:32";
+var date = messengerApi.parseDate(timestamp);
 ```
