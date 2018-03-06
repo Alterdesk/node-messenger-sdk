@@ -11,7 +11,7 @@
     "url": "git@gitlab.alterdesk.com:other/node-messenger-sdk.git"
   },
   "author": "Alterdesk",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "form-data": "^2.3.1",
     "mkdirp": "^0.5.1",
