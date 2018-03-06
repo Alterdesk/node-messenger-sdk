@@ -18,7 +18,9 @@ Create a Messenger API instance, the constructor needs the following
 * API OAuth 2.0 token
 
 ```javascript
-messengerApi = new Messenger.Api();
+var messenger = require('node-messenger-sdk');
+
+messengerApi = new messenger.Api();
 messengerApi.configure("https", "api.alterdesk.com", "v1", 443, "<ALTERDESK_API_TOKEN>");
 ```
 
