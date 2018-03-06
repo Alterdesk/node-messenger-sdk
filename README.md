@@ -17,11 +17,22 @@ Create a Messenger API instance, the constructor needs the following
 * API port *(default: "443")*
 * API OAuth 2.0 token
 
+Initialize when [environment variables](#Environment variables) are set
 ```javascript
 var messenger = require('node-messenger-sdk');
 
 messengerApi = new messenger.Api();
-messengerApi.configure("https", "api.alterdesk.com", "v1", 443, "<ALTERDESK_API_TOKEN>");
+messengerApi.configure();
+```
+
+Use defaults and only set token in script
+```javascript
+messengerApi.configure("<ALTERDESK_API_TOKEN>");
+```
+
+Or initialize everything manually
+```javascript
+messengerApi.configure("<ALTERDESK_API_TOKEN>", "https", "api.alterdesk.com", "v1", 443);
 ```
 
 ## Send a message
@@ -349,4 +360,43 @@ To convert a timestamp string to a Date object, use parseDate();
 ```javascript
 var timestamp = "2017-12-31T13:05:32";
 var date = messengerApi.parseDate(timestamp);
+```
+
+## Environment variables
+
+NODE_ALTERDESK_TOKEN
+* OAuth 2.0 token for the Alterdesk API
+
+NODE_ALTERDESK_TRANSPORT
+* Transport protocol to use *(default: https)*
+
+NODE_ALTERDESK_DOMAIN
+* API domain to connect to *(default: api.alterdesk.com)*
+
+NODE_ALTERDESK_PORT
+* API port to connect to *(default: 443)*
+
+NODE_ALTERDESK_VERSION
+* API version *(default: v1)*
+
+Set the variables in a bash script
+```bash
+#!/bin/sh
+ 
+export NODE_ALTERDESK_TOKEN=<ALTERDESK_API_TOKEN>
+export NODE_ALTERDESK_TRANSPORT=https
+export NODE_ALTERDESK_DOMAIN=api.alterdesk.com
+export NODE_ALTERDESK_PORT=443
+export NODE_ALTERDESK_VERSION=v1
+```
+
+Set the variables in a batch script
+```batch
+@echo off
+
+SET NODE_ALTERDESK_TOKEN=<ALTERDESK_API_TOKEN>
+SET NODE_ALTERDESK_TRANSPORT=https
+SET NODE_ALTERDESK_DOMAIN=api.alterdesk.com
+SET NODE_ALTERDESK_PORT=443
+SET NODE_ALTERDESK_VERSION=v1
 ```
