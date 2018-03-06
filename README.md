@@ -85,7 +85,7 @@ messengerApi.invite(inviteData, function(success, function(success, json) {
 });
 ````
 
-When inviting a user for a group chat, set the following fields and use createGroup()
+To invite a user for a group chat, use the following to use with createGroup()
 ```javascript
 // Create a one-to-one chat for this user
 inviteData.createConversation = false;
@@ -95,6 +95,7 @@ groupData.addInvite(inviteData);
 ```
 
 ### Create a group chat
+Create a group chat with optional members, invitations and settings
 ```javascript
 // Create a group data instance
 var groupData = new Messenger.CreateGroupData();
@@ -130,6 +131,8 @@ messengerApi.createGroup(groupData, function(success, json) {
 ```
 
 ### Download an attachment
+To download an attachment, first retrieve the URL and cookie to use for download, then use download() to download the 
+attachment.
 ```javascript
 // Create an attachment data instance
 var attachmentData = new Messenger.AttachmentData();
@@ -164,7 +167,9 @@ messengerApi.getAttachmentUrl(attachmentData, function(success, json, cookie) {
 });
 ```
 
-### Download chat in pdf format
+### Download chat in PDF format
+To download a chat PDF, determine the date range to use for PDF generation and get the URL and cookie to use for 
+download, then use download() to download the file.
 ```javascript
 // Create a PDF data instance
 var pdfData = new Messenger.PdfData();
