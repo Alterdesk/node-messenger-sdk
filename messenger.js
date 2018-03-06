@@ -332,18 +332,17 @@ module.exports = {
             });
         };
 
-
         /*
         *   API destination settings
         */
 
         configure(protocol, domain, version, port, token) {
-            this.apiProtocol = protocol;// = "https";
-            this.apiDomain = domain;// = "localapi.alterdesk.com";
-            this.apiVersion = version;// = "v1";
-            this.apiPort = port;// = 443;
-            this.apiUrl = protocol + "://" + domain + "/" + version + "/";
-            this.apiToken = token;
+            this.apiProtocol = protocol || process.env.HUBOT_ALTERDESK_TRANSPORT;// "https"
+            this.apiDomain = domain || process.env.HUBOT_ALTERDESK_DOMAIN;// = "api.alterdesk.com"
+            this.apiVersion = version || process.env.HUBOT_ALTERDESK_VERSION;// = "v1"
+            this.apiPort = port || process.env.HUBOT_ALTERDESK_PORT;// = 443
+            this.apiToken = token || process.env.HUBOT_ALTERDESK_TOKEN;
+            this.apiUrl = this.apiProtocol + "://" + this.apiDomain + "/" + this.apiVersion + "/";
             console.log("API Destination URL: " + this.apiUrl + " Token: " + token);
 
             var api = this;
