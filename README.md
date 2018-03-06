@@ -16,7 +16,7 @@ messengerApi.configure("https", "api.alterdesk.com", "v1", 443, "<ALTERDESK_API_
 ```
 
 ### Send a message
-Send a message with optional attachments in to a chat
+Send a message with or without attachments in to a chat
 ```javascript
 // Create a message data instance
 var messageData = new Messenger.SendMessageData();
@@ -197,15 +197,103 @@ messengerApi.getChatPdfUrl(pdfData, function(success, json, cookie) {
 });
 ```
 
-### Other API calls
-To use other API functions that are mentioned above, you can use the following code:
+### Using other API functions
+The [API](https://api.alterdesk.com/documentation) has more functions than described above, below are some example
+usages of get(), post() and postMultipart();
 
-Get
+#### Get
+Get has the following parameters
+* URL
+* Callback function
+* Override OAuth 2.0 token *(optional)*
+
+Retrieve a user *(GET)*
 ```javascript
+this.get("users/" + "<USER_ID>", function(success, json) {
+    if(json != null) {
+        // Parse result
+    }                                    
+});
 ```
-Post
+
+Retrieve a page of contacts *(GET with parameters)*
 ```javascript
+var getData = {};
+getData["page"] = 0;
+getData["amount"] = 20;
+this.get("me/contacts" + control.toGetParameters(getData), function(success, json) {
+   if(json != null) {
+       // Parse result
+   }                                    
+});
 ```
-Post Multipart
+
+#### Post
+Post has the following parameters
+* URL
+* JSON parameter string
+* Callback function
+* Override OAuth 2.0 token *(optional)*
+
+Import list of users *(POST)*
 ```javascript
+// Create invite data to import
+var inviteOne = {};
+inviteOne["email"] = "one@example.com";
+inviteOne["first_name"] = "firstOne";
+inviteOne["last_name"] = "lastOne";
+inviteOne["saml_username"] = "samlOne";
+inviteOne["username"] = "usernameOne";
+var inviteTwo = {};
+inviteTwo["email"] = "two@example.com";
+inviteTwo["first_name"] = "firstTwo";
+inviteTwo["last_name"] = "lastTwo";
+inviteTwo["saml_username"] = "samlTwo";
+inviteTwo["username"] = "usernameTwo";
+// Add invite data to an array
+var invites = [];
+invites.push(inviteOne);
+invites.push(inviteTwo);
+// Post data object
+var postData = {};
+// Send the imported users an email
+postData["send_email"] = false;
+// Add the created invites list
+postData["users"] = invites;
+// Create JSON string from data object
+var postJson = JSON.stringify(postData);
+this.post("company/import", postJson, function(success, json) {
+    if(json != null) {
+        // Parse result
+    }                                    
+});
+```
+
+#### Post Multipart
+Post has the following parameters
+* URL
+* Post data object
+* File path array
+* Callback function
+* Override OAuth 2.0 token *(optional)*
+
+Send attachment message *(demonstrative purposes only, please use sendMessage() instead)*
+```javascript
+// Chat id
+var chatId = "<CHAT_ID>";
+// Attachment paths to upload
+var filePaths = [];
+var filePaths.push("localFolder/firstAttachment.png");
+var filePaths.push("localFolder/secondAttachment.doc");
+// Post data object
+var postData = {};
+// Text body of message
+postData["message"] = "My message text";
+// URL to post to
+var postUrl = "conversations/" + chatId + "/attachments";
+this.postMultipart(postUrl, postData, filePaths, function(success, json) {
+    if(json != null) {
+        // Parse result
+    }                                    
+});
 ```
