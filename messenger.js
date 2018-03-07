@@ -191,6 +191,11 @@ module.exports = {
         get(getUrl, callback, overrideToken) {
             console.log("Messenger::get() >> " + getUrl);
             var token = overrideToken || this.apiToken;
+            if(token == null || token == "") {
+                console.error("API token not set on Messenger::get()");
+                callback(false, null);
+                return;
+            }
             try {
                 this.http(this.apiUrl + getUrl).header('Authorization', 'Bearer ' + token).header('Content-Type', 'application/json; charset=UTF-8').get()(function(err, resp, body) {
                     if(resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
@@ -216,6 +221,11 @@ module.exports = {
         post(postUrl, postJson, callback, overrideToken) {
             console.log("Messenger::post() >> " + postUrl + ": " + postJson);
             var token = overrideToken || this.apiToken;
+            if(token == null || token == "") {
+                console.error("API token not set on Messenger::post()");
+                callback(false, null);
+                return;
+            }
             try {
                 this.http(this.apiUrl + postUrl).header('Authorization', 'Bearer ' + token).header('Content-Type', 'application/json; charset=UTF-8').post(postJson)(function(err, resp, body) {
                     if(resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
@@ -236,6 +246,11 @@ module.exports = {
         postMultipart(postUrl, postData, attachmentPaths, callback, overrideToken) {
             console.log("Messenger::postMultipart() >> " + postUrl + " formData: " + postData + " attachmentPaths: ", attachmentPaths);
             var token = overrideToken || this.apiToken;
+            if(token == null || token == "") {
+                console.error("API token not set on Messenger::postMultipart()");
+                callback(false, null);
+                return;
+            }
             var formData = new FormData();
             for(var propName in postData) {
                 formData.append(propName, postData[propName]);
@@ -284,6 +299,11 @@ module.exports = {
         download(url, name, mime, cookie, callback, overrideToken) {
             console.log("Messenger::download() >> " + url + " name: " + name + " mime: " + mime + " cookie: " + cookie);
             var token = overrideToken || this.apiToken;
+            if(token == null || token == "") {
+                console.error("API token not set on Messenger::download()");
+                callback(false, null);
+                return;
+            }
             var auth = "Bearer " + token;
 
             var tmpDirPath = tmpDir + "/" + UuidV1();
@@ -344,6 +364,11 @@ module.exports = {
             this.apiPort = port || process.env.NODE_ALTERDESK_PORT || 443;
             this.apiUrl = this.apiProtocol + "://" + this.apiDomain + "/" + this.apiVersion + "/";
             console.log("API Destination URL: " + this.apiUrl + " Token: " + token);
+
+            if(this.apiToken == null || this.apiToken == "") {
+                console.error("No API token is set on Messenger::configure()");
+                return;
+            }
 
             var api = this;
             this.get("me", function(success, json) {
