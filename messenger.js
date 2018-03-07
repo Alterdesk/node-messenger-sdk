@@ -466,6 +466,9 @@ module.exports = {
     // Data container for creating group chats
     CreateGroupData: class {
         constructor() {
+            // Members to add
+            this.memberIds = [];
+
             // Users to invite
             this.inviteUsers = [];
 
@@ -477,8 +480,24 @@ module.exports = {
             this.membersCanInvite = false;
         };
 
-        addInvite(inviteUserData) {
-            this.inviteUsers.push(inviteUserData);
+        addMemberId(id) {
+            this.memberIds.push(id);
+        };
+
+        addMemberIds(ids) {
+            for(var index in ids) {
+                this.memberIds.push(ids[index]);
+            }
+        };
+
+        addInvite(invite) {
+            this.inviteUsers.push(invite);
+        };
+
+        addInvites(invites) {
+            for(var index in invites) {
+                this.inviteUsers.push(invites[index]);
+            }
         };
     },
 

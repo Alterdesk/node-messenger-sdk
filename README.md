@@ -49,7 +49,7 @@ messageData.addAttachmentPath("myAttachment.pdf");
 messageData.chatId = chatId;
 // If the chat is a group chat or a one-to-one chat
 messageData.isGroup = isChatGroup;
-// Optional auxiliary id for the chat
+// Optional flag if chat auxiliary
 messageData.isAux = isChatAux;
 // Use an alternative API token for this call (optional)
 messageData.overrideToken = "<OPTIONAL_ALTERNATIVE_API_TOKEN>";
@@ -125,7 +125,9 @@ groupData.subject = "My chat name"
 // Set an auxiliary id for this chat
 groupData.auxId = "<MY_AUX_ID>"
 // Optional members to add
-groupData.memberIds = ["<MEMBER_ID_1>", "<MEMBER_ID_2>", "<MEMBER_ID_3>"];
+groupData.addMemberId("<MEMBER_ID_1>");
+groupData.addMemberId("<MEMBER_ID_2>");
+groupData.addMemberId("<MEMBER_ID_3>");
 // Allow contacts in the group (optional)
 groupData.allowContacts = true;
 // Automatically close the group after 7 days of inactivity (optional)
