@@ -167,7 +167,7 @@ module.exports = {
             } else {
                 methodPrefix += "conversations/";
             }
-            if(messageData.attachmentPaths != null) {
+            if(messageData.attachmentPaths != null && messageData.attachmentPaths.length > 0) {
                 messagePostData["message"] = messageData.message;
                 var postUrl = methodPrefix + messageData.chatId + "/attachments";
                 this.postMultipart(postUrl, messagePostData, messageData.attachmentPaths, callback, messageData.overrideToken);
@@ -486,7 +486,7 @@ module.exports = {
 
         addMemberIds(ids) {
             for(var index in ids) {
-                this.memberIds.push(ids[index]);
+                this.addMemberId(ids[index]);
             }
         };
 
@@ -496,7 +496,7 @@ module.exports = {
 
         addInvites(invites) {
             for(var index in invites) {
-                this.inviteUsers.push(invites[index]);
+                this.addInvite(invites[index]);
             }
         };
     },
@@ -509,6 +509,12 @@ module.exports = {
 
         addAttachmentPath(path) {
             this.attachmentPaths.push(path);
+        };
+
+        addAttachmentPaths(paths) {
+            for(var index in paths) {
+                this.addAttachmentPath(paths[index]);
+            }
         };
     },
 

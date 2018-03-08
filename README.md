@@ -107,7 +107,7 @@ messengerApi.invite(inviteData, function(success, function(success, json) {
 
 To invite a user for a group chat, use the following to use with createGroup()
 ```javascript
-// Create a one-to-one chat for this user
+// Create a one-to-one chat with this user
 inviteData.createConversation = false;
 
 // Invite users in the group (see "Create a group chat" below)
