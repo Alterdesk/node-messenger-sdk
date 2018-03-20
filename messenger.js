@@ -179,6 +179,78 @@ module.exports = {
             }
         };
 
+        completeMentions(mentions, excludeIds, chatId, isGroup, isAux, callback) {
+            var mentionedMembers = [];
+            var userIds = [];
+            var mentionedAll = false;
+            for(var index in mentions) {
+                var mention = mentions[index];
+                var id = mention["id"];
+                if(id === "@all") {
+                    mentionedAll = true;
+                    break;
+                }
+                if(!mention["first_name"] || !mention["last_name"]) {
+                    var exclude = false;
+                    if(excludeIds != null) {
+                        for(var i in excludeIds) {
+                            if(mention["id"] === excludeIds[i]) {
+                                exclude = true;
+                                break;
+                            }
+                        }
+                        if(exclude) {
+                            continue;
+                        }
+                    }
+                    userIds.push(id);
+                } else {
+                    mentionedMembers.push(mention);
+                }
+            }
+            if(mentionedAll && isGroup) {
+                var url = "";
+                if(isAux) {
+                    url += "aux/"
+                }
+                url += "groupchats/" + chatId + "/members";
+                this.get(url, function(success, json) {
+                    if(success) {
+                        for(var index in json) {
+                            var member = json[index];
+                            var exclude = false;
+                            if(excludeIds != null) {
+                                for(var i in excludeIds) {
+                                    if(member["id"] === excludeIds[i]) {
+                                        exclude = true;
+                                        break;
+                                    }
+                                }
+                                if(exclude) {
+                                    console.log("Ignored message user member as mention");
+                                    continue;
+                                }
+                            }
+                            mentionedMembers.push(member);
+                        }
+                    }
+                    callback(mentionedMembers);
+                });
+            } else if(userIds.length > 0) {
+                for(var index in userIds) {
+                    this.get("users/" + userIds[index], function(success, json) {
+                        if(success) {
+                            mentionedMembers.push(json);
+                        }
+                        if(index + 1 >= userIds.length) {
+                            callback(mentionedMembers);
+                        }
+                    });
+                }
+            } else {
+                callback(mentionedMembers);
+            }
+        };
 
         /*
         *   Messenger API helper functions
