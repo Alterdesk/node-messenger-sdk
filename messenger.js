@@ -186,7 +186,7 @@ module.exports = {
             for(var index in mentions) {
                 var mention = mentions[index];
                 var id = mention["id"];
-                if(id === "@all") {
+                if(id.toUpperCase() === "@ALL") {
                     mentionedAll = true;
                     break;
                 }
