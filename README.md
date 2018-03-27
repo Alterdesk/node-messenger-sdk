@@ -327,6 +327,36 @@ this.postMultipart(postUrl, postData, filePaths, function(success, json) {
 
 ## Extra helper functions
 
+### Complete mention data
+When only user ids were retrieved/parsed or an all tag was used, you can retrieve all user data with completeMentions()
+```javascript
+// Mention data array
+var mentions = [];
+// @All members tag
+var mention = {};
+mention["id"] = "@all";
+// Exclude these user ids from mentions
+var excludeId = ["<EXCLUDE_USER_ID_1>", "<EXCLUDE_USER_ID_2>"];
+// Chat id
+var chatId = "<CHAT_ID>";
+// Is the chat a group
+var isGroup = true;
+// Is auxiliary chat
+var isAux = false;
+// Complete the mention data
+messengerApi.completeMentions(mentions, excludeIds, chatId, isGroup, isAux, function(mentionedMembers) {
+    for(var index in mentionedMembers) {
+        var mention = mentionedMembers[index];
+        // First name
+        var firstName = mention["first_name"];
+        // Last name
+        var lastName = mention["last_name"];
+        // Company name
+        var companyName = mention["company_name"];
+    }
+]);
+```
+
 ### Check permission for a user
 To easily add permission checks to your script you can use checkPermission(), for example check if a user is a coworker.
 ```javascript
