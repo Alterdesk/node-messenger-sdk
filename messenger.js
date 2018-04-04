@@ -328,10 +328,24 @@ module.exports = {
                 formData.append(propName, postData[propName]);
             }
             for(var i in attachmentPaths) {
+                var attachmentPath = attachmentPaths[i];
                 try {
-                    formData.append('files', FileSystem.createReadStream(attachmentPaths[i]));
+                    if(!FileSystem.existsSync(attachmentPath)) {
+                        console.error("File does not exist: " + attachmentPath);
+                        callback(false, null);
+                        return;
+                    }
+                    var stat = FileSystem.statSync(attachmentPath);
+                    if(stat["size"] === 0) {
+                        console.error("File is empty: " + attachmentPath);
+                        callback(false, null);
+                        return;
+                    }
+                    formData.append('files', FileSystem.createReadStream(attachmentPath));
                 } catch(err) {
-                    console.error(err);
+                    console.error("Error reading file: " + attachmentPath, err);
+                    callback(false, null);
+                    return;
                 }
             }
             var headers = formData.getHeaders();
