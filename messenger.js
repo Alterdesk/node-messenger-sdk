@@ -549,7 +549,7 @@ module.exports = {
             this.autoCloseAfter = 0;
             this.autoExpireAfter = 0;
             this.hybridMessaging = false;
-            this.membersCanInvite = false;
+            this.membersCanInvite = true;
         };
 
         addMemberId(id) {
