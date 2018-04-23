@@ -270,9 +270,12 @@ module.exports = {
             }
             try {
                 this.http(this.apiUrl + getUrl).header('Authorization', 'Bearer ' + token).header('Content-Type', 'application/json; charset=UTF-8').get()(function(err, resp, body) {
-                    if(resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
-                    console.log("Messenger::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
-                    var json = JSON.parse(body);
+                    if(!resp) {
+                        console.error("Messenger::get() << " + getUrl + ": " + err);
+                        callback(false, null);
+                    } else if(resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
+                        console.log("Messenger::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
+                        var json = JSON.parse(body);
                         callback(true, json);
                     } else if (resp.statusCode === 302) {
                         console.log("Messenger::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
@@ -300,7 +303,10 @@ module.exports = {
             }
             try {
                 this.http(this.apiUrl + postUrl).header('Authorization', 'Bearer ' + token).header('Content-Type', 'application/json; charset=UTF-8').post(postJson)(function(err, resp, body) {
-                    if(resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
+                    if(!resp) {
+                        console.error("Messenger::post() << " + getUrl + ": " + err);
+                        callback(false, null);
+                    } else if(resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
                         console.log("Messenger::post() << " + postUrl + ": " + resp.statusCode + ": " + body);
                         var json = JSON.parse(body);
                         callback(true, json);
@@ -356,10 +362,8 @@ module.exports = {
                 protocol: this.apiProtocol + ":",
                 path: "/" + this.apiVersion + "/" + postUrl,
                 headers: headers}, function(err, res) {
-                if(err != null) {
-                    console.error(err);
-                }
                 if(res == null) {
+                    console.log("Messenger::postMultipart() << " + postUrl + ": " + err);
                     callback(false, null);
                     return;
                 }
