@@ -256,8 +256,8 @@ module.exports = {
         *   Messenger API helper functions
         */
 
-        http(url) {//, options) {
-            return HttpClient.create(url);//, this.extend({}, this.globalHttpOptions, options));
+        http(url) {
+            return HttpClient.create(url, this.httpOptions);
         };
 
         get(getUrl, callback, overrideToken) {
@@ -453,7 +453,10 @@ module.exports = {
             this.apiVersion = version || process.env.NODE_ALTERDESK_VERSION || "v1";
             this.apiPort = port || process.env.NODE_ALTERDESK_PORT || 443;
             this.apiUrl = this.apiProtocol + "://" + this.apiDomain + "/" + this.apiVersion + "/";
-            console.log("API Destination URL: " + this.apiUrl + " Token: " + token);
+            console.log("API Destination URL: " + this.apiUrl + " Port: " + this.apiPort + " Token: " + this.apiToken);
+
+            this.httpOptions = {};
+            this.httpOptions.port = this.apiPort;
 
             if(this.apiToken == null || this.apiToken == "") {
                 console.error("No API token is set on Messenger::configure()");
