@@ -167,6 +167,13 @@ module.exports = {
             } else {
                 methodPrefix += "conversations/";
             }
+            var payloads = [];
+            if(messageData.requestButtons) {
+                var requestPayload = {};
+            }
+            if(payloads.length > 0) {
+                messagePostData["payload"] = payloads;
+            }
             if(messageData.attachmentPaths != null && messageData.attachmentPaths.length > 0) {
                 messagePostData["message"] = messageData.message;
                 var postUrl = methodPrefix + messageData.chatId + "/attachments";
@@ -594,6 +601,9 @@ module.exports = {
         };
     },
 
+    RequestButtonsData : class {
+    },
+
     // Data container for sending messages
     SendMessageData: class {
         constructor() {
@@ -608,6 +618,10 @@ module.exports = {
             for(var index in paths) {
                 this.addAttachmentPath(paths[index]);
             }
+        };
+
+        addRequestButtons(requestButtons) {
+            this.requestButtons = requestButtons;
         };
     },
 
