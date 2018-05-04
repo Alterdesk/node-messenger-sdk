@@ -357,11 +357,11 @@ messengerApi.completeMentions(mentions, excludeIds, chatId, isGroup, isAux, func
 ]);
 ```
 
-### Check permission for a user
-To easily add permission checks to your script you can use checkPermission(), for example check if a user is a coworker.
+### Check if coworker
+To easily add permission checks to your script you can check if a user is a coworker.
 ```javascript
-messengerApi.checkPermission("<USER_ID>", "coworkers", null, function(allowed) {
-    if(allowed) {
+messengerApi.isCoworker("<USER_ID>", robot.user, function(isCoworker) {
+    if(isCoworker) {
         // User is a coworker
     } else {
         // User is not a coworker
