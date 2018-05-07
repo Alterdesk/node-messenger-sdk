@@ -357,7 +357,7 @@ messengerApi.completeMentions(mentions, excludeIds, chatId, isGroup, isAux, func
 ]);
 ```
 
-### Check if coworker
+### Check if user is a coworker
 To easily add permission checks to your script you can check if a user is a coworker.
 ```javascript
 messengerApi.isCoworker("<USER_ID>", robot.user, function(isCoworker) {
@@ -369,14 +369,25 @@ messengerApi.isCoworker("<USER_ID>", robot.user, function(isCoworker) {
 }
 ```
 
+### Check if user is from company
+```javascript
+messengerApi.isUserFromCompany("<USER_ID>", "<COMPANY_ID>", function(isFromCompany) {
+    if(isFromCompany) {
+        // User is from company
+    } else {
+        // User is not from company
+    }
+});
+```
+
 ### Data object to GET parameters
 To easily convert a data object to GET parameters, use toGetParameters() to get a string suffix for your GET url.
 ```javascript
 // Get data object
 var getData = {};
-getData["first"] = "one";
-getData["second"] = "two";
-// Format string as "?first=one&second=two"
+getData["firstKey"] = "valueOne";
+getData["secondKey"] = "valueTwo";
+// Format string as "?firstKey=valueOne&secondKey=valueTwo"
 var param = messengerApi.toGetParameters(getData);
 ```
 
