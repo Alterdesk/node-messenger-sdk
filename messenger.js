@@ -470,11 +470,12 @@ module.exports = {
                 return;
             }
 
+            // TODO Remove section when all bots are using isCoworker() or isUserFromCompany()
             var api = this;
             this.get("me", function(success, json) {
                 if(success) {
-                    api.botCompanyId = json["company_id"];
-                    console.log("Bot company id: " + api.botCompanyId);
+                    api.companyId = json["company_id"];
+                    console.log("Bot company id: " + api.companyId);
                 } else {
                     console.error("Unable to retrieve bot account");
                 }
@@ -485,14 +486,15 @@ module.exports = {
         /*
         *   Check if user has permission, can limit access to "everyone", "coworkers", "ids"
         */
-
+        // TODO Remove function when all bots are using isCoworker() or isUserFromCompany()
         checkPermission(id, limitTo, limitIds, callback) {
+            console.error("Deprecated function \"checkPermission\", please use isCoworker() or isUserFromCompany() instead");
             console.log("checkPermission: id: " + id + " limitTo: " + limitTo + " limitIds: " + limitIds);
             if(limitTo == "everyone") {
                 callback(true);
             } else if(limitTo == "coworkers") {
-                if(this.botCompanyId == null) {
-                    console.error("Bot company id not set on checkPermission");
+                if(this.companyId == null) {
+                    console.error("Company id not set on checkPermission");
                     callback(false);
                     return;
                 }
@@ -500,8 +502,8 @@ module.exports = {
                 this.get("users/" + id, function(success, json) {
                     if(success) {
                         var userCompanyId = json["company_id"];
-                        var isCoworker = api.botCompanyId == userCompanyId && userCompanyId != null;
-                        console.log("checkPermission: isCoworker: " + isCoworker + " bot: " + api.botCompanyId + " user: " + userCompanyId);
+                        var isCoworker = api.companyId == userCompanyId && userCompanyId != null;
+                        console.log("checkPermission: isCoworker: " + isCoworker + " bot: " + api.companyId + " user: " + userCompanyId);
                         callback(isCoworker);
                     } else {
                         console.error("Unable to retrieve user by id on checkPermission: " + id);
@@ -528,6 +530,40 @@ module.exports = {
                 console.error("Unknown limit on checkPermission: \"" + limitTo + "\"");
                 callback(false);
             }
+        };
+
+        isCoworker(userId, checkUser, callback) {
+            if(checkUser == null) {
+                console.error("checkUser is null on isCoworker");
+                callback(false);
+                return;
+            }
+            this.isUserFromCompany(userId, checkUser.company_id, callback);
+        }
+
+        isUserFromCompany(userId, companyId, callback) {
+            if(userId == null) {
+                console.error("userId is null on isUserFromCompany");
+                callback(false);
+                return;
+            }
+            if(companyId == null) {
+                console.error("companyId is null on isUserFromCompany");
+                callback(false);
+                return;
+            }
+            var api = this;
+            this.get("users/" + userId, function(success, json) {
+                if(success) {
+                    var userCompanyId = json["company_id"];
+                    var isFromCompany = userCompanyId != null && companyId == userCompanyId;
+                    console.log("isUserFromCompany: " + isFromCompany + " companyId: " + userCompanyId);
+                    callback(isFromCompany);
+                } else {
+                    console.error("Unable to retrieve user by id on isUserFromCompany: " + userId);
+                    callback(false);
+                }
+            });
         };
 
         // Format data to encoded get parameters
