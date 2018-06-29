@@ -180,11 +180,67 @@ module.exports = {
                 this.postMultipart(postUrl, messagePostData, messageData.attachmentPaths, callback, messageData.overrideToken);
             } else {
                 messagePostData["body"] = messageData.message;
+
+                if(messageData.payload) {
+                    var payload = messageData.payload;
+                    if(payload.type === "question" && payload.questionOptions && payload.questionOptions.length > 0) {
+                        var questionOptions = [];
+                        for(var i in payload.questionOptions) {
+                            var option = payload.questionOptions[i];
+                            if(option.label && option.name) {
+                                var questionOption = {};
+                                questionOption["style"] = option.style || "red";
+                                questionOption["label"] = option.label;
+                                questionOption["name"] = option.name;
+                                questionOptions.push(questionOption);
+                            }
+                        }
+                        if(questionOptions.length > 0) {
+                            var questionPayload = {};
+                            questionPayload["options"] = questionOptions;
+                            questionPayload["multi_answer"] = payload.multiAnswer;
+                            if(payload.style) {
+                                questionPayload["style"] = payload.style;
+                            }
+                            if(payload.userIds && payload.userIds.length > 0) {
+                                questionPayload["users"] = payload.userIds;
+                            }
+                            messagePostData["question"] = questionPayload;
+                        }
+                    }
+                }
+
                 var messageJson = JSON.stringify(messagePostData);
                 var postUrl = methodPrefix + messageData.chatId + "/messages";
                 this.post(postUrl, messageJson, callback, messageData.overrideToken);
             }
         };
+
+        getUserProviders(userId, callback) {
+            this.get("users/" + userId + "/providers", callback);
+        };
+
+        getUserVerifications(userId, callback) {
+            this.get("users/" + userId + "/verifications", callback);
+        };
+
+        askUserVerification(userId, providerId, chatId, isGroup, isAux, callback) {
+            var methodPrefix = "";
+            if(isAux) {
+                methodPrefix += "aux/"
+            }
+            if(isGroup) {
+                methodPrefix += "groupchats/";
+            } else {
+                methodPrefix += "conversations/";
+            }
+            var postUrl = methodPrefix + chatId + "/verification";
+            var postData = {};
+            postData["user_id"] = userId;
+            postData["provider_id"] = providerId;
+            var postJson = JSON.stringify(postData);
+            this.post(postUrl, postJson, callback);
+        }
 
         completeMentions(mentions, excludeIds, chatId, isGroup, isAux, callback) {
             var mentionedMembers = [];
@@ -638,6 +694,37 @@ module.exports = {
     },
 
     RequestButtonsData : class {
+    },
+
+    VerificationPayload: class {
+        constructor() {
+            this.type = "verification";
+        }
+    },
+
+    QuestionOption: class {
+    },
+
+    QuestionPayload: class {
+        constructor() {
+            this.type = "question";
+            this.questionOptions = [];
+            this.userIds = [];
+        };
+
+        addQuestionOption(questionOption) {
+            this.questionOptions.push(questionOption);
+        };
+
+        addUserId(userId) {
+            this.userIds.push(userId);
+        };
+
+        addUserIds(userIds) {
+            for(var index in userIds) {
+                this.addUserId(userIds[index]);
+            }
+        };
     },
 
     // Data container for sending messages
