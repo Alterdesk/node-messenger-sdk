@@ -156,6 +156,19 @@ module.exports = {
             this.post(postUrl, groupPostJson, callback, groupData.overrideToken);
         };
 
+        getMessage(messageId, chatId, isGroup, isAux, callback) {
+            var methodPrefix = "";
+            if(isAux) {
+                methodPrefix += "aux/"
+            }
+            if(isGroup) {
+                methodPrefix += "groupchats/";
+            } else {
+                methodPrefix += "conversations/";
+            }
+            this.get(methodPrefix + chatId + "/messages/" + messageId, callback);
+        }
+
         sendMessage(messageData, callback) {
             var messagePostData = {};
             var methodPrefix = "";
