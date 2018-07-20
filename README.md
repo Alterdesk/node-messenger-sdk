@@ -106,6 +106,7 @@ var userId = "<USER_ID>";
 // Identity provider to check
 var provider = "<IDENTITY_PROVIDER_NAME>";
 
+// Get user verifications
 control.messengerApi.getUserVerifications(userId, function(success, json) {
     console.log("Get user verifications successful: " + success);
     var isVerified = false;
