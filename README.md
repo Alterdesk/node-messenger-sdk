@@ -57,7 +57,7 @@ messengerApi.getMessage(messageId, chatId, isGroup, isAux, function(success, jso
 ```
 
 ## Send a message
-Send a message with or without attachments in to a chat
+Send a message with optional attachments or payload in to a chat
 ```javascript
 // Create a message data instance
 var messageData = new Messenger.SendMessageData();
@@ -103,9 +103,9 @@ messengerApi.sendMessage(messageData, function(success, json) {
 First check if a user already has a verification from an identity provider
 ```javascript
 // User id to check
-var userId = <USER_ID>
+var userId = "<USER_ID>";
 // Provider to check if it is a remaining identity provider for this user
-var provider = "idin";
+var provider = "<IDENTITY_PROVIDER_NAME>";
 
 // Retrieve remaining identity providers for the user
 messengerApi.getUserProviders(userId, function(success, json) {
@@ -130,9 +130,9 @@ messengerApi.getUserProviders(userId, function(success, json) {
 Ask for verification if the user does not
 ```javascript
 // User id to ask
-var userId = <USER_ID>;
+var userId = "<USER_ID>";
 // Identity provider to use for verification
-var providerId = <IDENTITY_PROVIDER_ID>;
+var providerId = "<IDENTITY_PROVIDER_ID>";
 
 // Ask user for verification
 messengerApi.askUserVerification(userId, providerId, chatId, isGroup, isAux, function(success, json) {
