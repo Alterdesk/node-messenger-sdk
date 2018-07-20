@@ -726,6 +726,14 @@ class QuestionPayload {
         this.questionOptions.push(questionOption);
     }
 
+    addOption(name, label, style) {
+        var option = new QuestionOption();
+        option.name = name;
+        option.label = label;
+        option.style = style;
+        this.addQuestionOption(option);
+    }
+
     addUserId(userId) {
         this.userIds.push(userId);
     }

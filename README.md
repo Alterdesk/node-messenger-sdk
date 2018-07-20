@@ -35,6 +35,27 @@ Or initialize everything manually
 messengerApi.configure("<ALTERDESK_API_TOKEN>", "https", "api.alterdesk.com", "v1", 443);
 ```
 
+## Retrieve a message
+Get a message that has been sent in a chat
+```javascript
+// Id of the sent message
+var messageId = sentMessageId;
+// Chat id the message was sent in
+var chatId = chatId;
+// If the chat is a group chat or a one-to-one chat
+var isGroup = isChatGroup;
+// Optional flag if chat auxiliary
+var isAux = isChatAux;
+
+// Request the message and parse result in callback
+messengerApi.getMessage(messageId, chatId, isGroup, isAux, function(success, json) {
+    console.log("Get message successful: " + success);
+    if(json != null) {
+        var messageBody = json["body"];
+    }
+});
+```
+
 ## Send a message
 Send a message with or without attachments in to a chat
 ```javascript
@@ -53,6 +74,26 @@ messageData.isGroup = isChatGroup;
 messageData.isAux = isChatAux;
 // Use an alternative API token for this call (optional)
 messageData.overrideToken = "<OPTIONAL_ALTERNATIVE_API_TOKEN>";
+
+// Add an optional QuestionPayload
+var questionPayload = new Messenger.QuestionPayload();
+questionPayload.multiAnswer = false;
+questionPayload.style = "horizontal";
+
+// Add QuestionOption to the optional QuestionPayload
+var yesOption = new Messenger.QuestionOption();
+yesOption.name = "yes";
+yesOption.label = "Yes";
+yesOption.style = "green";
+questionPayload.addQuestionOption(yesOption);
+var noOption = new Messenger.QuestionOption();
+noOption.name = "no";
+noOption.label = "No";
+noOption.style = "red";
+questionPayload.addQuestionOption(noOption);
+questionPayload.addOption(name, label, style);
+questionPayload.addUserId(userId);
+messageData.payload = questionPayload;
 
 // Send the message and parse result in callback
 messengerApi.sendMessage(messageData, function(success, json) {
