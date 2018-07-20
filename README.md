@@ -99,6 +99,30 @@ messengerApi.sendMessage(messageData, function(success, json) {
 });
 ```
 
+## Check verifications for a user
+```javascript
+// User id to check
+var userId = "<USER_ID>";
+// Identity provider to check
+var provider = "<IDENTITY_PROVIDER_NAME>";
+
+control.messengerApi.getUserVerifications(userId, function(success, json) {
+    console.log("Get user verifications successful: " + success);
+    var isVerified = false;
+    var verifications= json["user"];
+    for(var i in verifications) {
+        var verification = verifications[i];
+        if(verification["name"] === provider) {
+            isVerified = true;
+            break;
+        }
+    }
+    if(isVerified) {
+        // User is verified with the provider
+    }
+});
+```
+
 ## Ask a user for verification
 First check if a user already has a verification from an identity provider
 ```javascript
@@ -121,8 +145,6 @@ messengerApi.getUserProviders(userId, function(success, json) {
         }
         if(providerId) {
             // User not verified with identity provider yet
-        } else {
-            // User already verified with identity provider
         }
     }
 });
