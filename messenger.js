@@ -706,12 +706,6 @@ class CreateGroupData {
     }
 }
 
-class VerificationPayload {
-    constructor() {
-        this.type = "verification";
-    }
-}
-
 class QuestionOption {
 }
 
@@ -783,7 +777,6 @@ module.exports = {
     Api : Api,
     InviteUserData : InviteUserData,
     CreateGroupData : CreateGroupData,
-    VerificationPayload : VerificationPayload,
     QuestionOption : QuestionOption,
     QuestionPayload : QuestionPayload,
     SendMessageData : SendMessageData,
