@@ -77,22 +77,17 @@ messageData.overrideToken = "<OPTIONAL_ALTERNATIVE_API_TOKEN>";
 
 // Add an optional QuestionPayload
 var questionPayload = new Messenger.QuestionPayload();
+// Allow a single answer only 
 questionPayload.multiAnswer = false;
+// Set the style of the question
 questionPayload.style = "horizontal";
-
-// Add QuestionOption to the optional QuestionPayload
-var yesOption = new Messenger.QuestionOption();
-yesOption.name = "yes";
-yesOption.label = "Yes";
-yesOption.style = "green";
-questionPayload.addQuestionOption(yesOption);
-var noOption = new Messenger.QuestionOption();
-noOption.name = "no";
-noOption.label = "No";
-noOption.style = "red";
-questionPayload.addQuestionOption(noOption);
-questionPayload.addOption(name, label, style);
+// Add a green yes button
+questionPayload.addOption("yes", "Yes", "green");
+// Add a red no button
+questionPayload.addOption("no", "No", "red");
+// Ask this question to the given user id
 questionPayload.addUserId(userId);
+// Add the payload to the message
 messageData.payload = questionPayload;
 
 // Send the message and parse result in callback
@@ -100,6 +95,51 @@ messengerApi.sendMessage(messageData, function(success, json) {
     console.log("Send message successful: " + success);
     if(json != null) {
         var messageId = json["id"];
+    }
+});
+```
+
+## Ask a user for verification
+First check if a user already has a verification from an identity provider
+```javascript
+// User id to check
+var userId = <USER_ID>
+// Provider to check if it is a remaining identity provider for this user
+var provider = "idin";
+
+// Retrieve remaining identity providers for the user
+messengerApi.getUserProviders(userId, function(success, json) {
+    console.log("Retrieving remaining identity providers for user successful: " + success);
+    if(json != null) {
+        var providerId;
+        for(var i in json) {
+            var provider = json[i];
+            if(provider["name"] === provider) {
+                providerId = provider["provider_id"];
+                break;
+            }
+        }
+        if(providerId) {
+            // User not verified with identity provider yet
+        } else {
+            // User already verified with identity provider
+        }
+    }
+});
+```
+Ask for verification if the user does not
+```javascript
+// User id to ask
+var userId = <USER_ID>;
+// Identity provider to use for verification
+var providerId = <IDENTITY_PROVIDER_ID>;
+
+// Ask user for verification
+messengerApi.askUserVerification(userId, providerId, chatId, isGroup, isAux, function(success, json) {
+    console.log("Asking user for verification successful: " + success);
+    if(json != null) {
+        var messageId = json["id"];
+        console.log("Verification message id: " + messageId);
     }
 });
 ```
