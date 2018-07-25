@@ -542,67 +542,6 @@ class Api {
             logger.error("Api::configure() No API token is set");
             return;
         }
-
-        // TODO Remove section when all bots are using isCoworker() or isUserFromCompany()
-        var api = this;
-        this.get("me", function(success, json) {
-            if(success) {
-                api.companyId = json["company_id"];
-                logger.debug("Api::configure() Bot company id: " + api.companyId);
-            } else {
-                logger.error("Api::configure() Unable to retrieve bot account");
-            }
-        });
-    }
-
-
-    /*
-    *   Check if user has permission, can limit access to "everyone", "coworkers", "ids"
-    */
-    // TODO Remove function when all bots are using isCoworker() or isUserFromCompany()
-    checkPermission(id, limitTo, limitIds, callback) {
-        logger.error("Deprecated function \"checkPermission\", please use isCoworker() or isUserFromCompany() instead");
-        logger.debug("Api::checkPermission() id: " + id + " limitTo: " + limitTo + " limitIds: " + limitIds);
-        if(limitTo == "everyone") {
-            callback(true);
-        } else if(limitTo == "coworkers") {
-            if(this.companyId == null) {
-                logger.error("Api::checkPermission() Company id not set");
-                callback(false);
-                return;
-            }
-            var api = this;
-            this.get("users/" + id, function(success, json) {
-                if(success) {
-                    var userCompanyId = json["company_id"];
-                    var isCoworker = api.companyId == userCompanyId && userCompanyId != null;
-                    logger.debug("Api::checkPermission() isCoworker: " + isCoworker + " bot: " + api.companyId + " user: " + userCompanyId);
-                    callback(isCoworker);
-                } else {
-                    logger.error("Api::checkPermission() Unable to retrieve user by id: " + id);
-                    callback(false);
-                }
-            });
-        } else if(limitTo == "ids") {
-            if(limitIds == null) {
-                logger.error("Api::checkPermission() LimitIds null when using limit \"ids\"");
-                callback(false);
-                return;
-            }
-            for(var index in limitIds) {
-                var limitId = limitIds[index];
-                if(id == limitId) {
-                    logger.debug("Api::checkPermission() Id found in allowed ids list");
-                    callback(true);
-                    return;
-                }
-            }
-            logger.debug("Api::checkPermission() Id not found in allowed ids list");
-            callback(false);
-        } else {
-            logger.error("Api::checkPermission() Unknown limit: \"" + limitTo + "\"");
-            callback(false);
-        }
     }
 
     isCoworker(userId, checkUser, callback) {
