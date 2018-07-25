@@ -510,26 +510,29 @@ var date = messengerApi.parseDate(timestamp);
 ```
 
 ## Environment variables
+Node messenger SDK log level
+* NODE_MESSENGER_SDK_LOG_LEVEL *(String)*
 
-NODE_ALTERDESK_TOKEN
-* OAuth 2.0 token for the Alterdesk API
+OAuth 2.0 token for the Alterdesk API
+* NODE_ALTERDESK_TOKEN
 
-NODE_ALTERDESK_TRANSPORT
-* Transport protocol to use *(default: https)*
+Transport protocol to use
+* NODE_ALTERDESK_TRANSPORT *(default: https)*
 
-NODE_ALTERDESK_DOMAIN
-* API domain to connect to *(default: api.alterdesk.com)*
+API domain to connect to
+* NODE_ALTERDESK_DOMAIN *(default: api.alterdesk.com)*
 
-NODE_ALTERDESK_PORT
-* API port to connect to *(default: 443)*
+API port to connect to
+* NODE_ALTERDESK_PORT *(default: 443)*
 
-NODE_ALTERDESK_VERSION
-* API version *(default: v1)*
+API version
+* NODE_ALTERDESK_VERSION *(default: v1)*
 
 Set the variables in a bash script
 ```bash
 #!/bin/sh
  
+export NODE_MESSENGER_SDK_LOG_LEVEL=debug
 export NODE_ALTERDESK_TOKEN=<ALTERDESK_API_TOKEN>
 export NODE_ALTERDESK_TRANSPORT=https
 export NODE_ALTERDESK_DOMAIN=api.alterdesk.com
@@ -541,6 +544,8 @@ Set the variables in a batch script
 ```batch
 @echo off
 
+SET NODE_MESSENGER_SDK_LOG_LEVEL=debug
+SET NODE_ALTERDESK_TOKEN=<ALTERDESK_API_TOKEN>
 SET NODE_ALTERDESK_TOKEN=<ALTERDESK_API_TOKEN>
 SET NODE_ALTERDESK_TRANSPORT=https
 SET NODE_ALTERDESK_DOMAIN=api.alterdesk.com

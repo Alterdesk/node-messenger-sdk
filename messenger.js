@@ -24,6 +24,10 @@ var Mkdirp = require('mkdirp');
 var Request = require('request');
 var Path = require('path');
 var OS = require('os');
+const Log = require('log');
+
+// Set the log instance
+var logger = new Log(process.env.NODE_MESSENGER_SDK_LOG_LEVEL || process.env.HUBOT_LOG_LEVEL || 'info');
 
 var tmpDir = Path.resolve(OS.tmpdir(), 'messenger-downloads');
 
@@ -96,7 +100,7 @@ class Api {
         } else if(inviteUserData.inviteType == "private_user") {
             this.post("users/invite/private", invitePostJson, callback);
         } else {
-            console.error("Unknown invite type on invite: \"" + inviteUserData.inviteType + "\"")
+            logger.error("Api::invite() Unknown invite type on invite: \"" + inviteUserData.inviteType + "\"")
             callback(false, null);
         }
     }
@@ -303,7 +307,7 @@ class Api {
                                 }
                             }
                             if(exclude) {
-                                console.log("Ignored message user member as mention");
+                                logger.debug("Api::completeMentions() Ignored message user member as mention");
                                 continue;
                             }
                         }
@@ -337,71 +341,71 @@ class Api {
     }
 
     get(getUrl, callback, overrideToken) {
-        console.log("Messenger::get() >> " + getUrl);
+        logger.debug("Api::get() >> " + getUrl);
         var token = overrideToken || this.apiToken;
         if(token == null || token == "") {
-            console.error("API token not set on Messenger::get()");
+            logger.error("Api::get() API token not set");
             callback(false, null);
             return;
         }
         try {
             this.http(this.apiUrl + getUrl).header('Authorization', 'Bearer ' + token).header('Content-Type', 'application/json; charset=UTF-8').get()(function(err, resp, body) {
                 if(!resp) {
-                    console.error("Messenger::get() << " + getUrl + ": " + err);
+                    logger.error("Api::get() << " + getUrl + ": " + err);
                     callback(false, null);
                 } else if(resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
-                    console.log("Messenger::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
+                    logger.debug("Api::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
                     var json = JSON.parse(body);
                     callback(true, json);
                 } else if (resp.statusCode === 302) {
-                    console.log("Messenger::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
+                    logger.debug("Api::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
                     var json = JSON.parse(body);
                     var cookie = resp.headers["set-cookie"];
                     callback(true, json, cookie);
                 } else {
-                    console.error("Messenger::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
+                    logger.error("Api::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
                     callback(false, null);
                 }
             });
         } catch(exception) {
-            console.error("Messenger::get() << " + getUrl + ": " + exception);
+            logger.error("Api::get() << " + getUrl + ": " + exception);
             callback(false, null);
         }
     }
 
     post(postUrl, postJson, callback, overrideToken) {
-        console.log("Messenger::post() >> " + postUrl + ": " + postJson);
+        logger.debug("Api::post() >> " + postUrl + ": " + postJson);
         var token = overrideToken || this.apiToken;
         if(token == null || token == "") {
-            console.error("API token not set on Messenger::post()");
+            logger.error("Api::post() API token not set");
             callback(false, null);
             return;
         }
         try {
             this.http(this.apiUrl + postUrl).header('Authorization', 'Bearer ' + token).header('Content-Type', 'application/json; charset=UTF-8').post(postJson)(function(err, resp, body) {
                 if(!resp) {
-                    console.error("Messenger::post() << " + getUrl + ": " + err);
+                    logger.error("Api::post() << " + getUrl + ": " + err);
                     callback(false, null);
                 } else if(resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
-                    console.log("Messenger::post() << " + postUrl + ": " + resp.statusCode + ": " + body);
+                    logger.debug("Api::post() << " + postUrl + ": " + resp.statusCode + ": " + body);
                     var json = JSON.parse(body);
                     callback(true, json);
                 } else {
-                    console.error("Messenger::post() << " + postUrl + ": " + resp.statusCode + ": " + body);
+                    logger.error("Api::post() << " + postUrl + ": " + resp.statusCode + ": " + body);
                     callback(false, null);
                 }
             });
         } catch(exception) {
-            console.error("Messenger::post() << " + postUrl + ": " + exception);
+            Logger.error("Api::post() << " + postUrl + ": " + exception);
             callback(false, null);
         }
     }
 
     postMultipart(postUrl, postData, attachmentPaths, callback, overrideToken) {
-        console.log("Messenger::postMultipart() >> " + postUrl + " formData: " + postData + " attachmentPaths: ", attachmentPaths);
+        logger.debug("Api::postMultipart() >> " + postUrl + " formData: " + postData + " attachmentPaths: ", attachmentPaths);
         var token = overrideToken || this.apiToken;
         if(token == null || token == "") {
-            console.error("API token not set on Messenger::postMultipart()");
+            logger.error("Api::postMultipart() API token not set");
             callback(false, null);
             return;
         }
@@ -413,19 +417,19 @@ class Api {
             var attachmentPath = attachmentPaths[i];
             try {
                 if(!FileSystem.existsSync(attachmentPath)) {
-                    console.error("File does not exist: " + attachmentPath);
+                    logger.error("Api::postMultipart() File does not exist: " + attachmentPath);
                     callback(false, null);
                     return;
                 }
                 var stat = FileSystem.statSync(attachmentPath);
                 if(stat["size"] === 0) {
-                    console.error("File is empty: " + attachmentPath);
+                    logger.error("Api::postMultipart() File is empty: " + attachmentPath);
                     callback(false, null);
                     return;
                 }
                 formData.append('files', FileSystem.createReadStream(attachmentPath));
             } catch(err) {
-                console.error("Error reading file: " + attachmentPath, err);
+                logger.error("Api::postMultipart() Error reading file: " + attachmentPath, err);
                 callback(false, null);
                 return;
             }
@@ -439,7 +443,7 @@ class Api {
             path: "/" + this.apiVersion + "/" + postUrl,
             headers: headers}, function(err, res) {
             if(res == null) {
-                console.log("Messenger::postMultipart() << " + postUrl + ": " + err);
+                logger.debug("Api::postMultipart()  << " + postUrl + ": " + err);
                 callback(false, null);
                 return;
             }
@@ -451,11 +455,11 @@ class Api {
             // Incoming data ended
             res.on('end', function() {
                 if(res.statusCode === 200 || res.statusCode === 201 || res.statusCode === 204 || res.statusCode === 304) {
-                    console.log("Messenger::postMultipart() << " + postUrl + ": " + res.statusCode + ": " + body);
+                    logger.debug("Api::postMultipart()  << " + postUrl + ": " + res.statusCode + ": " + body);
                     var json = JSON.parse(body);
                     callback(true, json);
                 } else {
-                    console.error("Messenger::postMultipart() << " + postUrl + ": " + res.statusCode + ": " + body);
+                    logger.error("Api::postMultipart()  << " + postUrl + ": " + res.statusCode + ": " + body);
                     callback(false, null);
                 }
             });
@@ -463,10 +467,10 @@ class Api {
     }
 
     download(url, name, mime, cookie, callback, overrideToken) {
-        console.log("Messenger::download() >> " + url + " name: " + name + " mime: " + mime + " cookie: " + cookie);
+        logger.debug("Api::download() >> " + url + " name: " + name + " mime: " + mime + " cookie: " + cookie);
         var token = overrideToken || this.apiToken;
         if(token == null || token == "") {
-            console.error("API token not set on Messenger::download()");
+            logger.error("Api::download() API token not set");
             callback(false, null);
             return;
         }
@@ -476,7 +480,7 @@ class Api {
 
         Mkdirp(tmpDirPath, function(mkdirError) {
             if(mkdirError != null) {
-                console.log("Unable to create temporary folder: " + tmpDirPath)
+                logger.error("Api::download() Unable to create temporary folder: " + tmpDirPath)
                 return;
             }
 
@@ -498,7 +502,7 @@ class Api {
             });
 
             req.on('error', function(err) {
-                console.log("Messenger::download() << " + url + ": " + err);
+                logger.debug("Api::download() << " + url + ": " + err);
                 callback(false, null);
             });
 
@@ -506,10 +510,10 @@ class Api {
                 if(res == null) {
                     callback(false, null);
                 } else if(res.statusCode == 200) {
-                    console.log("Messenger::download() << " + url + ": " + res.statusCode);
+                    logger.debug("Api::download() << " + url + ": " + res.statusCode);
                     callback(true, path);
                 } else {
-                    console.error("Messenger::download() << " + url + ": " + res.statusCode);
+                    logger.error("Api::download() << " + url + ": " + res.statusCode);
                     callback(false, null);
                 }
             });
@@ -529,13 +533,13 @@ class Api {
         this.apiVersion = version || process.env.NODE_ALTERDESK_VERSION || "v1";
         this.apiPort = port || process.env.NODE_ALTERDESK_PORT || 443;
         this.apiUrl = this.apiProtocol + "://" + this.apiDomain + "/" + this.apiVersion + "/";
-        console.log("API Destination URL: " + this.apiUrl + " Port: " + this.apiPort + " Token: " + this.apiToken);
+        logger.debug("Api::configure() URL: " + this.apiUrl + " Port: " + this.apiPort + " Token: " + this.apiToken);
 
         this.httpOptions = {};
         this.httpOptions.port = this.apiPort;
 
         if(this.apiToken == null || this.apiToken == "") {
-            console.error("No API token is set on Messenger::configure()");
+            logger.error("Api::configure() No API token is set");
             return;
         }
 
@@ -544,9 +548,9 @@ class Api {
         this.get("me", function(success, json) {
             if(success) {
                 api.companyId = json["company_id"];
-                console.log("Bot company id: " + api.companyId);
+                logger.debug("Api::configure() Bot company id: " + api.companyId);
             } else {
-                console.error("Unable to retrieve bot account");
+                logger.error("Api::configure() Unable to retrieve bot account");
             }
         });
     }
@@ -557,13 +561,13 @@ class Api {
     */
     // TODO Remove function when all bots are using isCoworker() or isUserFromCompany()
     checkPermission(id, limitTo, limitIds, callback) {
-        console.error("Deprecated function \"checkPermission\", please use isCoworker() or isUserFromCompany() instead");
-        console.log("checkPermission: id: " + id + " limitTo: " + limitTo + " limitIds: " + limitIds);
+        logger.error("Deprecated function \"checkPermission\", please use isCoworker() or isUserFromCompany() instead");
+        logger.debug("Api::checkPermission() id: " + id + " limitTo: " + limitTo + " limitIds: " + limitIds);
         if(limitTo == "everyone") {
             callback(true);
         } else if(limitTo == "coworkers") {
             if(this.companyId == null) {
-                console.error("Company id not set on checkPermission");
+                logger.error("Api::checkPermission() Company id not set");
                 callback(false);
                 return;
             }
@@ -572,38 +576,39 @@ class Api {
                 if(success) {
                     var userCompanyId = json["company_id"];
                     var isCoworker = api.companyId == userCompanyId && userCompanyId != null;
-                    console.log("checkPermission: isCoworker: " + isCoworker + " bot: " + api.companyId + " user: " + userCompanyId);
+                    logger.debug("Api::checkPermission() isCoworker: " + isCoworker + " bot: " + api.companyId + " user: " + userCompanyId);
                     callback(isCoworker);
                 } else {
-                    console.error("Unable to retrieve user by id on checkPermission: " + id);
+                    logger.error("Api::checkPermission() Unable to retrieve user by id: " + id);
                     callback(false);
                 }
             });
         } else if(limitTo == "ids") {
             if(limitIds == null) {
-                console.error("LimitIds null when using limit \"ids\" on checkPermission");
+                logger.error("Api::checkPermission() LimitIds null when using limit \"ids\"");
                 callback(false);
                 return;
             }
             for(var index in limitIds) {
                 var limitId = limitIds[index];
                 if(id == limitId) {
-                    console.log("Id found in allowed ids list on checkPermission");
+                    logger.debug("Api::checkPermission() Id found in allowed ids list");
                     callback(true);
                     return;
                 }
             }
-            console.log("Id not found in allowed ids list on checkPermission");
+            logger.debug("Api::checkPermission() Id not found in allowed ids list");
             callback(false);
         } else {
-            console.error("Unknown limit on checkPermission: \"" + limitTo + "\"");
+            logger.error("Api::checkPermission() Unknown limit: \"" + limitTo + "\"");
             callback(false);
         }
     }
 
     isCoworker(userId, checkUser, callback) {
+        logger.debug("Api::isCoworker() userId: " + userId);
         if(checkUser == null) {
-            console.error("checkUser is null on isCoworker");
+            logger.error("Api::isCoworker() checkUser is null");
             callback(false);
             return;
         }
@@ -611,13 +616,14 @@ class Api {
     }
 
     isUserFromCompany(userId, companyId, callback) {
+        logger.debug("Api::isUserFromCompany() userId: " + userId + " companyId: " + companyId);
         if(userId == null) {
-            console.error("userId is null on isUserFromCompany");
+            logger.error("Api::isUserFromCompany() userId is null");
             callback(false);
             return;
         }
         if(companyId == null) {
-            console.error("companyId is null on isUserFromCompany");
+            logger.error("Api::isUserFromCompany() companyId is null");
             callback(false);
             return;
         }
@@ -626,10 +632,10 @@ class Api {
             if(success) {
                 var userCompanyId = json["company_id"];
                 var isFromCompany = userCompanyId != null && companyId == userCompanyId;
-                console.log("isUserFromCompany: " + isFromCompany + " companyId: " + userCompanyId);
+                logger.debug("Api::isUserFromCompany() isUserFromCompany: " + isFromCompany + " companyId: " + userCompanyId);
                 callback(isFromCompany);
             } else {
-                console.error("Unable to retrieve user by id on isUserFromCompany: " + userId);
+                logger.error("Api::isUserFromCompany() Unable to retrieve user by id: " + userId);
                 callback(false);
             }
         });
