@@ -35,8 +35,29 @@ Or initialize everything manually
 messengerApi.configure("<ALTERDESK_API_TOKEN>", "https", "api.alterdesk.com", "v1", 443);
 ```
 
+## Retrieve a message
+Get a message that has been sent in a chat
+```javascript
+// Id of the sent message
+var messageId = sentMessageId;
+// Chat id the message was sent in
+var chatId = chatId;
+// If the chat is a group chat or a one-to-one chat
+var isGroup = isChatGroup;
+// Optional flag if chat auxiliary
+var isAux = isChatAux;
+
+// Request the message and parse result in callback
+messengerApi.getMessage(messageId, chatId, isGroup, isAux, function(success, json) {
+    console.log("Get message successful: " + success);
+    if(json != null) {
+        var messageBody = json["body"];
+    }
+});
+```
+
 ## Send a message
-Send a message with or without attachments in to a chat
+Send a message with optional attachments or payload in to a chat
 ```javascript
 // Create a message data instance
 var messageData = new Messenger.SendMessageData();
@@ -54,11 +75,94 @@ messageData.isAux = isChatAux;
 // Use an alternative API token for this call (optional)
 messageData.overrideToken = "<OPTIONAL_ALTERNATIVE_API_TOKEN>";
 
+// Add an optional QuestionPayload
+var questionPayload = new Messenger.QuestionPayload();
+// Allow a single answer only 
+questionPayload.multiAnswer = false;
+// Set the style of the question
+questionPayload.style = "horizontal";
+// Add a green yes button
+questionPayload.addOption("yes", "Yes", "green");
+// Add a red no button
+questionPayload.addOption("no", "No", "red");
+// Ask this question to the given user id
+questionPayload.addUserId(userId);
+// Add the payload to the message
+messageData.payload = questionPayload;
+
 // Send the message and parse result in callback
 messengerApi.sendMessage(messageData, function(success, json) {
     console.log("Send message successful: " + success);
     if(json != null) {
         var messageId = json["id"];
+    }
+});
+```
+
+## Check verifications for a user
+```javascript
+// User id to check
+var userId = "<USER_ID>";
+// Identity provider to check
+var provider = "<IDENTITY_PROVIDER_NAME>";
+
+// Get user verifications
+control.messengerApi.getUserVerifications(userId, function(success, json) {
+    console.log("Get user verifications successful: " + success);
+    var isVerified = false;
+    var verifications= json["user"];
+    for(var i in verifications) {
+        var verification = verifications[i];
+        if(verification["name"] === provider) {
+            isVerified = true;
+            break;
+        }
+    }
+    if(isVerified) {
+        // User is verified with the provider
+    }
+});
+```
+
+## Ask a user for verification
+First check if a user already has a verification from an identity provider
+```javascript
+// User id to check
+var userId = "<USER_ID>";
+// Provider to check if it is a remaining identity provider for this user
+var provider = "<IDENTITY_PROVIDER_NAME>";
+
+// Retrieve remaining identity providers for the user
+messengerApi.getUserProviders(userId, function(success, json) {
+    console.log("Retrieving remaining identity providers for user successful: " + success);
+    if(json != null) {
+        var providerId;
+        for(var i in json) {
+            var provider = json[i];
+            if(provider["name"] === provider) {
+                providerId = provider["provider_id"];
+                break;
+            }
+        }
+        if(providerId) {
+            // User not verified with identity provider yet
+        }
+    }
+});
+```
+Ask for verification if the user does not
+```javascript
+// User id to ask
+var userId = "<USER_ID>";
+// Identity provider to use for verification
+var providerId = "<IDENTITY_PROVIDER_ID>";
+
+// Ask user for verification
+messengerApi.askUserVerification(userId, providerId, chatId, isGroup, isAux, function(success, json) {
+    console.log("Asking user for verification successful: " + success);
+    if(json != null) {
+        var messageId = json["id"];
+        console.log("Verification message id: " + messageId);
     }
 });
 ```
@@ -406,26 +510,29 @@ var date = messengerApi.parseDate(timestamp);
 ```
 
 ## Environment variables
+Node messenger SDK log level
+* NODE_MESSENGER_SDK_LOG_LEVEL *(String)*
 
-NODE_ALTERDESK_TOKEN
-* OAuth 2.0 token for the Alterdesk API
+OAuth 2.0 token for the Alterdesk API
+* NODE_ALTERDESK_TOKEN
 
-NODE_ALTERDESK_TRANSPORT
-* Transport protocol to use *(default: https)*
+Transport protocol to use
+* NODE_ALTERDESK_TRANSPORT *(default: https)*
 
-NODE_ALTERDESK_DOMAIN
-* API domain to connect to *(default: api.alterdesk.com)*
+API domain to connect to
+* NODE_ALTERDESK_DOMAIN *(default: api.alterdesk.com)*
 
-NODE_ALTERDESK_PORT
-* API port to connect to *(default: 443)*
+API port to connect to
+* NODE_ALTERDESK_PORT *(default: 443)*
 
-NODE_ALTERDESK_VERSION
-* API version *(default: v1)*
+API version
+* NODE_ALTERDESK_VERSION *(default: v1)*
 
 Set the variables in a bash script
 ```bash
 #!/bin/sh
  
+export NODE_MESSENGER_SDK_LOG_LEVEL=debug
 export NODE_ALTERDESK_TOKEN=<ALTERDESK_API_TOKEN>
 export NODE_ALTERDESK_TRANSPORT=https
 export NODE_ALTERDESK_DOMAIN=api.alterdesk.com
@@ -437,6 +544,8 @@ Set the variables in a batch script
 ```batch
 @echo off
 
+SET NODE_MESSENGER_SDK_LOG_LEVEL=debug
+SET NODE_ALTERDESK_TOKEN=<ALTERDESK_API_TOKEN>
 SET NODE_ALTERDESK_TOKEN=<ALTERDESK_API_TOKEN>
 SET NODE_ALTERDESK_TRANSPORT=https
 SET NODE_ALTERDESK_DOMAIN=api.alterdesk.com
