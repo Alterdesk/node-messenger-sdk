@@ -160,6 +160,28 @@ class Api {
         this.post(postUrl, groupPostJson, callback, groupData.overrideToken);
     }
 
+    addGroupMembers(groupId, isAux, userIds, callback) {
+        var methodPrefix = "";
+        if(isAux) {
+            methodPrefix += "aux/"
+        }
+        var memberPutData = {};
+        memberPutData["members"] = userIds;
+        var memberPutJson = JSON.stringify(memberPutData);
+        this.put(methodPrefix + "groupchats/" + groupId + "/members", memberPutJson, callback);
+    }
+
+    removeGroupMembers(groupId, isAux, userIds, callback) {
+        var methodPrefix = "";
+        if(isAux) {
+            methodPrefix += "aux/"
+        }
+        var memberPutData = {};
+        memberPutData["members"] = userIds;
+        var memberPutJson = JSON.stringify(memberPutData);
+        this.delete(methodPrefix + "groupchats/" + groupId + "/members", memberPutJson, callback);
+    }
+
     getMessage(messageId, chatId, isGroup, isAux, callback) {
         var methodPrefix = "";
         if(isAux) {
@@ -340,6 +362,37 @@ class Api {
         return HttpClient.create(url, this.httpOptions);
     }
 
+    delete(deleteUrl, deleteJson, callback, overrideToken) {
+        logger.debug("Api::delete() >> " + deleteUrl + ": " + deleteJson);
+        var token = overrideToken || this.apiToken;
+        if(token == null || token == "") {
+            logger.error("Api::delete() API token not set");
+            callback(false, null);
+            return;
+        }
+        try {
+            this.http(this.apiUrl + deleteUrl).header('Authorization', 'Bearer ' + token).header('Content-Type', 'application/json; charset=UTF-8').delete(deleteJson)(function(err, resp, body) {
+                if(!resp) {
+                    logger.error("Api::delete() << " + deleteUrl + ": " + err);
+                    callback(false, null);
+                } else if(resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
+                    logger.debug("Api::delete() << " + deleteUrl + ": " + resp.statusCode + ": " + body);
+                    var json;
+                    if(body && body !== "") {
+                        json = JSON.parse(body);
+                    }
+                    callback(true, json);
+                } else {
+                    logger.error("Api::delete() << " + deleteUrl + ": " + resp.statusCode + ": " + body);
+                    callback(false, null);
+                }
+            });
+        } catch(exception) {
+            Logger.error("Api::delete() << " + deleteUrl + ": " + exception);
+            callback(false, null);
+        }
+    }
+
     get(getUrl, callback, overrideToken) {
         logger.debug("Api::get() >> " + getUrl);
         var token = overrideToken || this.apiToken;
@@ -355,11 +408,17 @@ class Api {
                     callback(false, null);
                 } else if(resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
                     logger.debug("Api::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
-                    var json = JSON.parse(body);
+                    var json;
+                    if(body && body !== "") {
+                        json = JSON.parse(body);
+                    }
                     callback(true, json);
                 } else if (resp.statusCode === 302) {
                     logger.debug("Api::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
-                    var json = JSON.parse(body);
+                    var json;
+                    if(body && body !== "") {
+                        json = JSON.parse(body);
+                    }
                     var cookie = resp.headers["set-cookie"];
                     callback(true, json, cookie);
                 } else {
@@ -384,11 +443,14 @@ class Api {
         try {
             this.http(this.apiUrl + postUrl).header('Authorization', 'Bearer ' + token).header('Content-Type', 'application/json; charset=UTF-8').post(postJson)(function(err, resp, body) {
                 if(!resp) {
-                    logger.error("Api::post() << " + getUrl + ": " + err);
+                    logger.error("Api::post() << " + postUrl + ": " + err);
                     callback(false, null);
                 } else if(resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
                     logger.debug("Api::post() << " + postUrl + ": " + resp.statusCode + ": " + body);
-                    var json = JSON.parse(body);
+                    var json;
+                    if(body && body !== "") {
+                        json = JSON.parse(body);
+                    }
                     callback(true, json);
                 } else {
                     logger.error("Api::post() << " + postUrl + ": " + resp.statusCode + ": " + body);
@@ -456,7 +518,10 @@ class Api {
             res.on('end', function() {
                 if(res.statusCode === 200 || res.statusCode === 201 || res.statusCode === 204 || res.statusCode === 304) {
                     logger.debug("Api::postMultipart()  << " + postUrl + ": " + res.statusCode + ": " + body);
-                    var json = JSON.parse(body);
+                    var json;
+                    if(body && body !== "") {
+                        json = JSON.parse(body);
+                    }
                     callback(true, json);
                 } else {
                     logger.error("Api::postMultipart()  << " + postUrl + ": " + res.statusCode + ": " + body);
@@ -464,6 +529,37 @@ class Api {
                 }
             });
         });
+    }
+
+    put(putUrl, putJson, callback, overrideToken) {
+        logger.debug("Api::put() >> " + putUrl + ": " + putJson);
+        var token = overrideToken || this.apiToken;
+        if(token == null || token == "") {
+            logger.error("Api::put() API token not set");
+            callback(false, null);
+            return;
+        }
+        try {
+            this.http(this.apiUrl + putUrl).header('Authorization', 'Bearer ' + token).header('Content-Type', 'application/json; charset=UTF-8').put(putJson)(function(err, resp, body) {
+                if(!resp) {
+                    logger.error("Api::put() << " + putUrl + ": " + err);
+                    callback(false, null);
+                } else if(resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
+                    logger.debug("Api::put() << " + putUrl + ": " + resp.statusCode + ": " + body);
+                    var json;
+                    if(body && body !== "") {
+                        json = JSON.parse(body);
+                    }
+                    callback(true, json);
+                } else {
+                    logger.error("Api::put() << " + putUrl + ": " + resp.statusCode + ": " + body);
+                    callback(false, null);
+                }
+            });
+        } catch(exception) {
+            Logger.error("Api::put() << " + putUrl + ": " + exception);
+            callback(false, null);
+        }
     }
 
     download(url, name, mime, cookie, callback, overrideToken) {
