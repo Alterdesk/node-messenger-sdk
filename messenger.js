@@ -29,7 +29,8 @@ const Log = require('log');
 // Set the log instance
 var logger = new Log(process.env.NODE_MESSENGER_SDK_LOG_LEVEL || process.env.HUBOT_LOG_LEVEL || 'info');
 
-var tmpDir = Path.resolve(OS.tmpdir(), 'messenger-downloads');
+var tmpDownloadDir = Path.resolve(OS.tmpdir(), 'messenger-downloads');
+var tmpUploadDir = Path.resolve(OS.tmpdir(), 'messenger-uploads');
 
 
 
@@ -562,6 +563,30 @@ class Api {
         }
     }
 
+    getTmpDownloadPath(callback) {
+        var tmpDownloadPath = tmpDownloadDir + "/" + UuidV1();
+        Mkdirp(tmpDownloadPath, (mkdirError) => {
+            if(mkdirError != null) {
+                logger.error("Api::getTmpDownloadPath() Unable to create temporary folder: " + tmpDownloadPath)
+                callback(false, null);
+                return;
+            }
+            callback(true, tmpDownloadDir);
+        });
+    }
+
+    getTmpUploadPath(callback) {
+        var tmpUploadPath = tmpUploadDir + "/" + UuidV1();
+        Mkdirp(tmpUploadPath, (mkdirError) => {
+            if(mkdirError != null) {
+                logger.error("Api::getTmpUploadPath() Unable to create temporary folder: " + tmpUploadPath)
+                callback(false, null);
+                return;
+            }
+            callback(true, tmpUploadPath);
+        });
+    }
+
     download(url, name, mime, cookie, callback, overrideToken) {
         logger.debug("Api::download() >> " + url + " name: " + name + " mime: " + mime + " cookie: " + cookie);
         var token = overrideToken || this.apiToken;
@@ -572,15 +597,13 @@ class Api {
         }
         var auth = "Bearer " + token;
 
-        var tmpDirPath = tmpDir + "/" + UuidV1();
-
-        Mkdirp(tmpDirPath, function(mkdirError) {
-            if(mkdirError != null) {
-                logger.error("Api::download() Unable to create temporary folder: " + tmpDirPath)
+        this.getTmpDownloadPath((success, tmpDownloadPath) => {
+            if(!success) {
+                logger.error("Api::download() Unable to create temporary folder: " + tmpDownloadPath)
                 return;
             }
 
-            var path = tmpDirPath + "/" + name;
+            var path = tmpDownloadPath + "/" + name;
             var req = Request({
                 uri: url,
                 method: 'get',
