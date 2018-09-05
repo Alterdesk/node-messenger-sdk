@@ -15,23 +15,22 @@
 //   Alterdesk
 
 // Requirements
-var FormData = require('form-data');
-var HttpClient = require('scoped-http-client');
-var UuidV1 = require('uuid/v1');
-var Moment = require('moment');
-var FileSystem = require('fs');
-var Mkdirp = require('mkdirp');
-var Request = require('request');
-var Path = require('path');
-var OS = require('os');
+const FormData = require('form-data');
+const HttpClient = require('scoped-http-client');
+const UuidV1 = require('uuid/v1');
+const Moment = require('moment');
+const FileSystem = require('fs');
+const Mkdirp = require('mkdirp');
+const Request = require('request');
+const Path = require('path');
+const OS = require('os');
 const Log = require('log');
 
 // Set the log instance
-var logger = new Log(process.env.NODE_MESSENGER_SDK_LOG_LEVEL || process.env.HUBOT_LOG_LEVEL || 'info');
+const logger = new Log(process.env.NODE_MESSENGER_SDK_LOG_LEVEL || process.env.HUBOT_LOG_LEVEL || 'info');
 
-var tmpDownloadDir = Path.resolve(OS.tmpdir(), 'messenger-downloads');
-var tmpUploadDir = Path.resolve(OS.tmpdir(), 'messenger-uploads');
-
+const tmpDownloadDir = Path.resolve(OS.tmpdir(), 'messenger-downloads');
+const tmpUploadDir = Path.resolve(OS.tmpdir(), 'messenger-uploads');
 
 
 // Api connection class
@@ -359,8 +358,10 @@ class Api {
     *   Messenger API helper functions
     */
 
-    http(url) {
-        return HttpClient.create(url, this.httpOptions);
+    http(url, token) {
+        return HttpClient.create(url, this.httpOptions)
+        .header('Authorization', 'Bearer ' + token)
+        .header('Content-Type', 'application/json; charset=UTF-8');
     }
 
     delete(deleteUrl, deleteJson, callback, overrideToken) {
@@ -372,7 +373,7 @@ class Api {
             return;
         }
         try {
-            this.http(this.apiUrl + deleteUrl).header('Authorization', 'Bearer ' + token).header('Content-Type', 'application/json; charset=UTF-8').delete(deleteJson)(function(err, resp, body) {
+            this.http(this.apiUrl + deleteUrl, token).delete(deleteJson)((err, resp, body) => {
                 if(!resp) {
                     logger.error("Api::delete() << " + deleteUrl + ": " + err);
                     callback(false, null);
@@ -389,7 +390,7 @@ class Api {
                 }
             });
         } catch(exception) {
-            Logger.error("Api::delete() << " + deleteUrl + ": " + exception);
+            logger.error("Api::delete() << " + deleteUrl + ": " + exception);
             callback(false, null);
         }
     }
@@ -403,7 +404,7 @@ class Api {
             return;
         }
         try {
-            this.http(this.apiUrl + getUrl).header('Authorization', 'Bearer ' + token).header('Content-Type', 'application/json; charset=UTF-8').get()(function(err, resp, body) {
+            this.http(this.apiUrl + getUrl, token).get()((err, resp, body) => {
                 if(!resp) {
                     logger.error("Api::get() << " + getUrl + ": " + err);
                     callback(false, null);
@@ -442,7 +443,7 @@ class Api {
             return;
         }
         try {
-            this.http(this.apiUrl + postUrl).header('Authorization', 'Bearer ' + token).header('Content-Type', 'application/json; charset=UTF-8').post(postJson)(function(err, resp, body) {
+            this.http(this.apiUrl + postUrl, token).post(postJson)((err, resp, body) => {
                 if(!resp) {
                     logger.error("Api::post() << " + postUrl + ": " + err);
                     callback(false, null);
@@ -459,7 +460,7 @@ class Api {
                 }
             });
         } catch(exception) {
-            Logger.error("Api::post() << " + postUrl + ": " + exception);
+            logger.error("Api::post() << " + postUrl + ": " + exception);
             callback(false, null);
         }
     }
@@ -506,7 +507,7 @@ class Api {
             path: "/" + this.apiVersion + "/" + postUrl,
             headers: headers}, function(err, res) {
             if(res == null) {
-                logger.debug("Api::postMultipart()  << " + postUrl + ": " + err);
+                logger.debug("Api::postMultipart() << " + postUrl + ": " + err);
                 callback(false, null);
                 return;
             }
@@ -518,14 +519,14 @@ class Api {
             // Incoming data ended
             res.on('end', function() {
                 if(res.statusCode === 200 || res.statusCode === 201 || res.statusCode === 204 || res.statusCode === 304) {
-                    logger.debug("Api::postMultipart()  << " + postUrl + ": " + res.statusCode + ": " + body);
+                    logger.debug("Api::postMultipart() << " + postUrl + ": " + res.statusCode + ": " + body);
                     var json;
                     if(body && body !== "") {
                         json = JSON.parse(body);
                     }
                     callback(true, json);
                 } else {
-                    logger.error("Api::postMultipart()  << " + postUrl + ": " + res.statusCode + ": " + body);
+                    logger.error("Api::postMultipart() << " + postUrl + ": " + res.statusCode + ": " + body);
                     callback(false, null);
                 }
             });
@@ -541,7 +542,7 @@ class Api {
             return;
         }
         try {
-            this.http(this.apiUrl + putUrl).header('Authorization', 'Bearer ' + token).header('Content-Type', 'application/json; charset=UTF-8').put(putJson)(function(err, resp, body) {
+            this.http(this.apiUrl + putUrl, token).put(putJson)((err, resp, body) => {
                 if(!resp) {
                     logger.error("Api::put() << " + putUrl + ": " + err);
                     callback(false, null);
@@ -558,7 +559,7 @@ class Api {
                 }
             });
         } catch(exception) {
-            Logger.error("Api::put() << " + putUrl + ": " + exception);
+            logger.error("Api::put() << " + putUrl + ": " + exception);
             callback(false, null);
         }
     }
