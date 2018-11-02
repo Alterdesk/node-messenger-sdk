@@ -167,6 +167,7 @@ class Api {
         }
         var memberPutData = {};
         memberPutData["members"] = userIds;
+//        memberPutData["aux_members"] = false; TODO
         var memberPutJson = JSON.stringify(memberPutData);
         this.put(methodPrefix + "groupchats/" + groupId + "/members", memberPutJson, callback);
     }
@@ -176,10 +177,19 @@ class Api {
         if(isAux) {
             methodPrefix += "aux/"
         }
-        var memberPutData = {};
-        memberPutData["members"] = userIds;
-        var memberPutJson = JSON.stringify(memberPutData);
-        this.delete(methodPrefix + "groupchats/" + groupId + "/members", memberPutJson, callback);
+        var memberDeleteData = {};
+        memberDeleteData["members"] = userIds;
+//        memberDeleteData["aux_members"] = false; TODO
+        var memberDeleteJson = JSON.stringify(memberDeleteData);
+        this.delete(methodPrefix + "groupchats/" + groupId + "/members", memberDeleteJson, callback);
+    }
+
+    closeGroupChat(groupId, isAux, callback) {
+        var methodPrefix = "";
+        if(isAux) {
+            methodPrefix += "aux/"
+        }
+        this.delete(methodPrefix + "groupchats/" + groupId, null, callback);
     }
 
     getMessage(messageId, chatId, isGroup, isAux, callback) {
