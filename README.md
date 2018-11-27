@@ -404,6 +404,7 @@ this.post("company/import", postJson, function(success, json) {
 Post has the following parameters
 * URL
 * Post data object
+* File parameter
 * File path array
 * Callback function
 * Override OAuth 2.0 token *(optional)*
@@ -412,6 +413,8 @@ Send attachment message *(demonstrative purposes only, please use sendMessage() 
 ```javascript
 // Chat id
 var chatId = "<CHAT_ID>";
+// Parameter name to use for files
+var fileParameter = "files";
 // Attachment paths to upload
 var filePaths = [];
 var filePaths.push("localFolder/firstAttachment.png");
@@ -422,7 +425,7 @@ var postData = {};
 postData["message"] = "My message text";
 // URL to post to
 var postUrl = "conversations/" + chatId + "/attachments";
-this.postMultipart(postUrl, postData, filePaths, function(success, json) {
+this.postMultipart(postUrl, postData, fileParameter, filePaths, function(success, json) {
     if(json != null) {
         // Parse result
     }                                    
@@ -533,7 +536,7 @@ Set the variables in a bash script
 #!/bin/sh
  
 export NODE_MESSENGER_SDK_LOG_LEVEL=debug
-export NODE_ALTERDESK_TOKEN=<ALTERDESK_API_TOKEN>
+export NODE_ALTERDESK_TOKEN=ALTERDESK_API_TOKEN
 export NODE_ALTERDESK_TRANSPORT=https
 export NODE_ALTERDESK_DOMAIN=api.alterdesk.com
 export NODE_ALTERDESK_PORT=443

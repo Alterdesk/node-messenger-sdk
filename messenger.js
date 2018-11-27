@@ -160,7 +160,7 @@ class Api {
         this.post(postUrl, groupPostJson, callback, groupData.overrideToken);
     }
 
-    addGroupMembers(groupId, isAux, userIds, callback) {
+    addGroupMembers(groupId, isAux, userIds, callback, overrideToken) {
         var methodPrefix = "";
         if(isAux) {
             methodPrefix += "aux/"
@@ -169,10 +169,10 @@ class Api {
         memberPutData["members"] = userIds;
 //        memberPutData["aux_members"] = false; TODO
         var memberPutJson = JSON.stringify(memberPutData);
-        this.put(methodPrefix + "groupchats/" + groupId + "/members", memberPutJson, callback);
+        this.put(methodPrefix + "groupchats/" + groupId + "/members", memberPutJson, callback, overrideToken);
     }
 
-    removeGroupMembers(groupId, isAux, userIds, callback) {
+    removeGroupMembers(groupId, isAux, userIds, callback, overrideToken) {
         var methodPrefix = "";
         if(isAux) {
             methodPrefix += "aux/"
@@ -181,15 +181,60 @@ class Api {
         memberDeleteData["members"] = userIds;
 //        memberDeleteData["aux_members"] = false; TODO
         var memberDeleteJson = JSON.stringify(memberDeleteData);
-        this.delete(methodPrefix + "groupchats/" + groupId + "/members", memberDeleteJson, callback);
+        this.delete(methodPrefix + "groupchats/" + groupId + "/members", memberDeleteJson, callback, overrideToken);
     }
 
-    closeGroupChat(groupId, isAux, callback) {
+    changeGroupSubject(groupId, isAux, subject, callback, overrideToken) {
         var methodPrefix = "";
         if(isAux) {
             methodPrefix += "aux/"
         }
-        this.delete(methodPrefix + "groupchats/" + groupId, null, callback);
+        var subjectPostData = {};
+        subjectPostData["subject"] = subject;
+        var subjectPostJson = JSON.stringify(subjectPostData);
+        this.put(methodPrefix + "groupchats/" + groupId, subjectPostJson, callback, overrideToken);
+    }
+
+    changeGroupSettings(groupId, isAux, groupSettingsData, callback, overrideToken) {
+        var methodPrefix = "";
+        if(isAux) {
+            methodPrefix += "aux/"
+        }
+        var settingsPostData = {};
+        if(groupData.allowContacts != null) {
+            settingsPostData["allow_contacts"] = groupData.allowContacts;
+        }
+        if(groupData.autoCloseAfter != null) {
+            settingsPostData["auto_close_after"] = groupData.autoCloseAfter;
+        }
+        if(groupData.autoExpireAfter != null) {
+            settingsPostData["auto_expire_after"] = groupData.autoExpireAfter;
+        }
+        if(groupData.hybridMessaging != null) {
+            settingsPostData["hybrid_messaging"] = groupData.hybridMessaging;
+        }
+        if(groupData.membersCanInvite != null) {
+            settingsPostData["members_can_invite"] = groupData.membersCanInvite;
+        }
+        var settingsPostJson = JSON.stringify(settingsPostData);
+        this.put(methodPrefix + "groupchats/" + groupId + "/settings", settingsPostJson, callback, overrideToken);
+    }
+
+    changeGroupAvatar(groupId, isAux, avatarPath, callback, overrideToken) {
+        var methodPrefix = "";
+        if(isAux) {
+            methodPrefix += "aux/"
+        }
+        var postUrl = methodPrefix + "groupchats/" + groupId + "/avatar";
+        this.postMultipart(postUrl, null, "avatar", [avatarPath], callback, overrideToken);
+    }
+
+    closeGroupChat(groupId, isAux, callback, overrideToken) {
+        var methodPrefix = "";
+        if(isAux) {
+            methodPrefix += "aux/"
+        }
+        this.delete(methodPrefix + "groupchats/" + groupId, null, callback, overrideToken);
     }
 
     getMessage(messageId, chatId, isGroup, isAux, callback) {
@@ -226,7 +271,7 @@ class Api {
         if(messageData.attachmentPaths != null && messageData.attachmentPaths.length > 0) {
             messagePostData["message"] = messageData.message;
             var postUrl = methodPrefix + messageData.chatId + "/attachments";
-            this.postMultipart(postUrl, messagePostData, messageData.attachmentPaths, callback, messageData.overrideToken);
+            this.postMultipart(postUrl, messagePostData, "files", messageData.attachmentPaths, callback, messageData.overrideToken);
         } else {
             messagePostData["body"] = messageData.message;
 
@@ -475,8 +520,8 @@ class Api {
         }
     }
 
-    postMultipart(postUrl, postData, attachmentPaths, callback, overrideToken) {
-        logger.debug("Api::postMultipart() >> " + postUrl + " formData: " + postData + " attachmentPaths: ", attachmentPaths);
+    postMultipart(postUrl, postData, fileParameter, filePaths, callback, overrideToken) {
+        logger.debug("Api::postMultipart() >> " + postUrl + " formData: " + postData + " filePaths: ", filePaths);
         var token = overrideToken || this.apiToken;
         if(token == null || token == "") {
             logger.error("Api::postMultipart() API token not set");
@@ -484,26 +529,28 @@ class Api {
             return;
         }
         var formData = new FormData();
-        for(var propName in postData) {
-            formData.append(propName, postData[propName]);
+        if(postData) {
+            for(var propName in postData) {
+                formData.append(propName, postData[propName]);
+            }
         }
-        for(var i in attachmentPaths) {
-            var attachmentPath = attachmentPaths[i];
+        for(var i in filePaths) {
+            var filePath = filePaths[i];
             try {
-                if(!FileSystem.existsSync(attachmentPath)) {
-                    logger.error("Api::postMultipart() File does not exist: " + attachmentPath);
+                if(!FileSystem.existsSync(filePath)) {
+                    logger.error("Api::postMultipart() File does not exist: " + filePath);
                     callback(false, null);
                     return;
                 }
-                var stat = FileSystem.statSync(attachmentPath);
+                var stat = FileSystem.statSync(filePath);
                 if(stat["size"] === 0) {
-                    logger.error("Api::postMultipart() File is empty: " + attachmentPath);
+                    logger.error("Api::postMultipart() File is empty: " + filePath);
                     callback(false, null);
                     return;
                 }
-                formData.append('files', FileSystem.createReadStream(attachmentPath));
+                formData.append(fileParameter, FileSystem.createReadStream(filePath));
             } catch(err) {
-                logger.error("Api::postMultipart() Error reading file: " + attachmentPath, err);
+                logger.error("Api::postMultipart() Error reading file: " + filePath, err);
                 callback(false, null);
                 return;
             }
@@ -778,6 +825,36 @@ class CreateGroupData {
         for(var index in invites) {
             this.addInvite(invites[index]);
         }
+    }
+}
+
+class GroupSettingsData {
+    constructor() {
+        this.allowContacts = null; //true;
+        this.autoCloseAfter = null; //0;
+        this.autoExpireAfter = null; //0;
+        this.hybridMessaging = null; //false;
+        this.membersCanInvite = null; //true;
+    }
+
+    setAllowContacts(allow) {
+        this.allowContacts = allow;
+    }
+
+    setCloseAfter(after) {
+        this.autoCloseAfter = after;
+    }
+
+    setExpireAfter(after) {
+        this.autoExpireAfter = after;
+    }
+
+    setHybridMessaging(hybrid) {
+        this.hybridMessaging = hybrid;
+    }
+
+    setMembersCanInvite(invite) {
+        this.membersCanInvite = invite;
     }
 }
 
