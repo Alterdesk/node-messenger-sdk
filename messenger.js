@@ -88,6 +88,9 @@ class Api {
         if(inviteUserData.inviteMessage != null) {
             inviteData["invite_text"] = inviteUserData.inviteMessage;  // Only used when creating conversation
         }
+        if(inviteUserData.sendEmail != null) {
+            inviteData["send_email"] = inviteUserData.sendEmail;
+        }
         if(inviteUsersData.auxId != null) {
             inviteData["aux_id"] = inviteUsersData.auxId;
         }
@@ -142,6 +145,10 @@ class Api {
         groupPostData["members"] = groupData.memberIds;
         groupPostData["settings"] = settingsPostData;
         groupPostData["subject"] = groupData.subject;
+
+        if(groupData.sendEmail != null) {
+            groupPostData["send_email"] = groupData.sendEmail;
+        }
 
         if(groupData.auxId != null) {
             groupPostData["aux_id"] = groupData.auxId;
