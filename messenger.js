@@ -636,7 +636,7 @@ class Api {
                 callback(false, null);
                 return;
             }
-            callback(true, tmpDownloadDir);
+            callback(true, tmpDownloadPath);
         });
     }
 
