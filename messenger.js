@@ -52,7 +52,7 @@ class Api {
         } else {
             methodPrefix += "conversations/";
         }
-        this.get(methodPrefix + attachmentData.chatId + "/attachments/" + attachmentData.id + this.toGetParameters(getData), callback);
+        this.get(methodPrefix + attachmentData.chatId + "/attachments/" + attachmentData.id + this.toGetParameters(getData), callback, attachmentData.overrideToken);
     }
 
     getChatPdfUrl(pdfData, callback) {
@@ -73,7 +73,7 @@ class Api {
         } else {
             methodPrefix += "conversations/";
         }
-        this.get(methodPrefix + pdfData.chatId + "/pdf" + this.toGetParameters(getData), callback);
+        this.get(methodPrefix + pdfData.chatId + "/pdf" + this.toGetParameters(getData), callback, pdfData.overrideToken);
     }
 
     invite(inviteUserData, callback) {
@@ -97,11 +97,11 @@ class Api {
         var invitePostJson = JSON.stringify(inviteData);
 
         if(inviteUserData.inviteType == "coworker") {
-            this.post("users/invite/coworker", invitePostJson, callback);
+            this.post("users/invite/coworker", invitePostJson, callback, inviteUsersData.overrideToken);
         } else if(inviteUserData.inviteType == "contact") {
-            this.post("users/invite/contact", invitePostJson, callback);
+            this.post("users/invite/contact", invitePostJson, callback, inviteUsersData.overrideToken);
         } else if(inviteUserData.inviteType == "private_user") {
-            this.post("users/invite/private", invitePostJson, callback);
+            this.post("users/invite/private", invitePostJson, callback, inviteUsersData.overrideToken);
         } else {
             logger.error("Api::invite() Unknown invite type on invite: \"" + inviteUserData.inviteType + "\"")
             callback(false, null);
@@ -153,7 +153,7 @@ class Api {
         if(groupData.auxId != null) {
             groupPostData["aux_id"] = groupData.auxId;
             if(hasAuxMembers) {
-            groupPostData["aux_members"] = true;
+                groupPostData["aux_members"] = true;
             }
         }
 
@@ -244,7 +244,7 @@ class Api {
         this.delete(methodPrefix + "groupchats/" + groupId, null, callback, overrideToken);
     }
 
-    getMessage(messageId, chatId, isGroup, isAux, callback) {
+    getChat(chatId, isGroup, isAux, callback, overrideToken) {
         var methodPrefix = "";
         if(isAux) {
             methodPrefix += "aux/"
@@ -254,7 +254,40 @@ class Api {
         } else {
             methodPrefix += "conversations/";
         }
-        this.get(methodPrefix + chatId + "/messages/" + messageId, callback);
+        this.get(methodPrefix + chatId, callback, overrideToken);
+    }
+
+    getUser(userId, isAux, callback, overrideToken) {
+        if(!isAux) {
+            this.get("/users/" + userId, callback, overrideToken);
+            return;
+        }
+        // Auxiliary users can only be retrieved via a conversation
+        this.get("/aux/conversations/" + userId, (success, json) => {
+            if(!success || !json) {
+                callback(false, null);
+                return;
+            }
+            var user = json["user"];
+            if(!user) {
+                callback(false, null);
+                return;
+            }
+            callback(true, user);
+        }, overrideToken);
+    }
+
+    getMessage(messageId, chatId, isGroup, isAux, callback, overrideToken) {
+        var methodPrefix = "";
+        if(isAux) {
+            methodPrefix += "aux/"
+        }
+        if(isGroup) {
+            methodPrefix += "groupchats/";
+        } else {
+            methodPrefix += "conversations/";
+        }
+        this.get(methodPrefix + chatId + "/messages/" + messageId, callback, overrideToken);
     }
 
     sendMessage(messageData, callback) {
@@ -317,15 +350,15 @@ class Api {
         }
     }
 
-    getUserProviders(userId, callback) {
-        this.get("users/" + userId + "/providers", callback);
+    getUserProviders(userId, callback, overrideToken) {
+        this.get("users/" + userId + "/providers", callback, overrideToken);
     }
 
-    getUserVerifications(userId, callback) {
-        this.get("users/" + userId + "/verifications", callback);
+    getUserVerifications(userId, callback, overrideToken) {
+        this.get("users/" + userId + "/verifications", callback, overrideToken);
     }
 
-    askUserVerification(userId, providerId, chatId, isGroup, isAux, callback) {
+    askUserVerification(userId, providerId, chatId, isGroup, isAux, callback, overrideToken) {
         var methodPrefix = "";
         if(isAux) {
             methodPrefix += "aux/"
@@ -340,7 +373,7 @@ class Api {
         postData["user_id"] = userId;
         postData["provider_id"] = providerId;
         var postJson = JSON.stringify(postData);
-        this.post(postUrl, postJson, callback);
+        this.post(postUrl, postJson, callback, overrideToken);
     }
 
     completeMentions(mentions, excludeIds, chatId, isGroup, isAux, callback) {
