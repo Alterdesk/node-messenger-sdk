@@ -327,23 +327,11 @@ class Api {
     }
 
     getUser(userId, isAux, callback, overrideToken) {
-        if(!isAux) {
-            this.get("/users/" + userId, callback, overrideToken);
-            return;
+        var methodPrefix = "";
+        if(isAux) {
+            methodPrefix += "aux/"
         }
-        // Auxiliary users can only be retrieved via a conversation
-        this.get("/aux/conversations/" + userId, (success, json) => {
-            if(!success || !json) {
-                callback(false, null);
-                return;
-            }
-            var user = json["user"];
-            if(!user) {
-                callback(false, null);
-                return;
-            }
-            callback(true, user);
-        }, overrideToken);
+        this.get(methodPrefix + "users/" + userId, callback, overrideToken);
     }
 
     getMessage(messageId, chatId, isGroup, isAux, callback, overrideToken) {
