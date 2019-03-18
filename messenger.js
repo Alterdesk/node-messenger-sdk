@@ -27,7 +27,7 @@ const OS = require('os');
 const Log = require('log');
 
 // Set the log instance
-const Logger = new Log(process.env.NODE_MESSENGER_SDK_LOG_LEVEL || process.env.HUBOT_LOG_LEVEL || 'info');
+const Logger = new Log(process.env.NODE_MESSENGER_SDK_LOG_LEVEL || process.env.HUBOT_LOG_LEVEL || 'debug');
 
 const tmpDownloadDir = Path.resolve(OS.tmpdir(), 'messenger-downloads');
 const tmpUploadDir = Path.resolve(OS.tmpdir(), 'messenger-uploads');
