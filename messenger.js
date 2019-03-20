@@ -236,6 +236,14 @@ class Api {
         this.post(postUrl, groupPostJson, callback, groupData.overrideToken);
     }
 
+    getGroupMembers(groupId, isAux, callback, overrideToken) {
+        var methodPrefix = "";
+        if(isAux) {
+            methodPrefix += "aux/"
+        }
+        this.get(methodPrefix + "groupchats/" + groupId + "/members", callback, overrideToken);
+    }
+
     addGroupMembers(groupId, isAux, userIds, callback, overrideToken) {
         var methodPrefix = "";
         if(isAux) {
