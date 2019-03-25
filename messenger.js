@@ -313,12 +313,16 @@ class Api {
         this.postMultipart(postUrl, null, "avatar", [avatarPath], callback, overrideToken);
     }
 
-    closeGroupChat(groupId, isAux, callback, overrideToken) {
+    closeGroupChat(groupId, isAux, sendEmail, callback, overrideToken) {
+        var closePostData = {};
+        closePostData["send_email"] = sendEmail;
+        var closePostJson = JSON.stringify(closePostData);
+
         var methodPrefix = "";
         if(isAux) {
             methodPrefix += "aux/"
         }
-        this.delete(methodPrefix + "groupchats/" + groupId, null, callback, overrideToken);
+        this.delete(methodPrefix + "groupchats/" + groupId, closePostJson, callback, overrideToken);
     }
 
     getChat(chatId, isGroup, isAux, callback, overrideToken) {
