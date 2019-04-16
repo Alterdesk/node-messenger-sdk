@@ -87,7 +87,7 @@ class Api {
         } else {
             methodPrefix += "conversations/";
         }
-        this.get(methodPrefix + attachmentData.chatId + "/attachments/" + attachmentData.id + this.toGetParameters(getData), callback, attachmentData.overrideToken);
+        this.get(methodPrefix + encodeURIComponent(attachmentData.chatId) + "/attachments/" + attachmentData.id + this.toGetParameters(getData), callback, attachmentData.overrideToken);
     }
 
     downloadChatPdf(filename, startDate, endDate, chatId, isGroup, isAux) {
@@ -142,7 +142,7 @@ class Api {
         } else {
             methodPrefix += "conversations/";
         }
-        this.get(methodPrefix + pdfData.chatId + "/pdf" + this.toGetParameters(getData), callback, pdfData.overrideToken);
+        this.get(methodPrefix + encodeURIComponent(pdfData.chatId) + "/pdf" + this.toGetParameters(getData), callback, pdfData.overrideToken);
     }
 
     invite(inviteUserData, callback) {
@@ -241,7 +241,7 @@ class Api {
         if(isAux) {
             methodPrefix += "aux/"
         }
-        this.get(methodPrefix + "groupchats/" + groupId + "/members", callback, overrideToken);
+        this.get(methodPrefix + "groupchats/" + encodeURIComponent(groupId) + "/members", callback, overrideToken);
     }
 
     addGroupMembers(groupId, isAux, userIds, callback, overrideToken) {
@@ -253,7 +253,7 @@ class Api {
         memberPutData["members"] = userIds;
 //        memberPutData["aux_members"] = false; TODO
         var memberPutJson = JSON.stringify(memberPutData);
-        this.put(methodPrefix + "groupchats/" + groupId + "/members", memberPutJson, callback, overrideToken);
+        this.put(methodPrefix + "groupchats/" + encodeURIComponent(groupId) + "/members", memberPutJson, callback, overrideToken);
     }
 
     removeGroupMembers(groupId, isAux, userIds, callback, overrideToken) {
@@ -265,7 +265,7 @@ class Api {
         memberDeleteData["members"] = userIds;
 //        memberDeleteData["aux_members"] = false; TODO
         var memberDeleteJson = JSON.stringify(memberDeleteData);
-        this.delete(methodPrefix + "groupchats/" + groupId + "/members", memberDeleteJson, callback, overrideToken);
+        this.delete(methodPrefix + "groupchats/" + encodeURIComponent(groupId) + "/members", memberDeleteJson, callback, overrideToken);
     }
 
     changeGroupSubject(groupId, isAux, subject, callback, overrideToken) {
@@ -276,7 +276,7 @@ class Api {
         var subjectPostData = {};
         subjectPostData["subject"] = subject;
         var subjectPostJson = JSON.stringify(subjectPostData);
-        this.put(methodPrefix + "groupchats/" + groupId, subjectPostJson, callback, overrideToken);
+        this.put(methodPrefix + "groupchats/" + encodeURIComponent(groupId), subjectPostJson, callback, overrideToken);
     }
 
     changeGroupSettings(groupId, isAux, groupSettingsData, callback, overrideToken) {
@@ -301,7 +301,7 @@ class Api {
             settingsPostData["members_can_invite"] = groupData.membersCanInvite;
         }
         var settingsPostJson = JSON.stringify(settingsPostData);
-        this.put(methodPrefix + "groupchats/" + groupId + "/settings", settingsPostJson, callback, overrideToken);
+        this.put(methodPrefix + "groupchats/" + encodeURIComponent(groupId) + "/settings", settingsPostJson, callback, overrideToken);
     }
 
     changeGroupAvatar(groupId, isAux, avatarPath, callback, overrideToken) {
@@ -309,7 +309,7 @@ class Api {
         if(isAux) {
             methodPrefix += "aux/"
         }
-        var postUrl = methodPrefix + "groupchats/" + groupId + "/avatar";
+        var postUrl = methodPrefix + "groupchats/" + encodeURIComponent(groupId) + "/avatar";
         this.postMultipart(postUrl, null, "avatar", [avatarPath], callback, overrideToken);
     }
 
@@ -322,7 +322,7 @@ class Api {
         if(isAux) {
             methodPrefix += "aux/"
         }
-        this.delete(methodPrefix + "groupchats/" + groupId, closePostJson, callback, overrideToken);
+        this.delete(methodPrefix + "groupchats/" + encodeURIComponent(groupId), closePostJson, callback, overrideToken);
     }
 
     getChat(chatId, isGroup, isAux, callback, overrideToken) {
@@ -335,7 +335,7 @@ class Api {
         } else {
             methodPrefix += "conversations/";
         }
-        this.get(methodPrefix + chatId, callback, overrideToken);
+        this.get(methodPrefix + encodeURIComponent(chatId), callback, overrideToken);
     }
 
     getUser(userId, isAux, callback, overrideToken) {
@@ -343,7 +343,7 @@ class Api {
         if(isAux) {
             methodPrefix += "aux/"
         }
-        this.get(methodPrefix + "users/" + userId, callback, overrideToken);
+        this.get(methodPrefix + "users/" + encodeURIComponent(userId), callback, overrideToken);
     }
 
     getMessage(messageId, chatId, isGroup, isAux, callback, overrideToken) {
@@ -356,7 +356,7 @@ class Api {
         } else {
             methodPrefix += "conversations/";
         }
-        this.get(methodPrefix + chatId + "/messages/" + messageId, callback, overrideToken);
+        this.get(methodPrefix + encodeURIComponent(chatId) + "/messages/" + messageId, callback, overrideToken);
     }
 
     sendMessage(messageData, callback) {
