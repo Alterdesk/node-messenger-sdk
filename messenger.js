@@ -672,7 +672,7 @@ class Api {
             protocol: this.apiProtocol + ":",
             path: "/" + this.apiVersion + "/" + postUrl,
             headers: headers}, function(err, res) {
-            if(res == null) {
+            if(err || res == null) {
                 Logger.debug("Api::postMultipart() << " + postUrl + ": " + err);
                 callback(false, null);
                 return;
