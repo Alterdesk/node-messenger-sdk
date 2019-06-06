@@ -360,6 +360,7 @@ class Api {
     }
 
     sendMessage(messageData, callback) {
+        Logger.debug("Api::sendMessage() ", messageData);
         var messagePostData = {};
         var methodPrefix = "";
         if(messageData.isAux) {
