@@ -15,6 +15,7 @@
 //   Alterdesk
 
 // Requirements
+const Logger = require('node-messenger-log');
 const FormData = require('form-data');
 const HttpClient = require('scoped-http-client');
 const UuidV1 = require('uuid/v1');
@@ -24,10 +25,9 @@ const Mkdirp = require('mkdirp');
 const Request = require('request');
 const Path = require('path');
 const OS = require('os');
-const Log = require('log');
 
 // Set the log instance
-const Logger = new Log(process.env.NODE_MESSENGER_SDK_LOG_LEVEL || process.env.HUBOT_LOG_LEVEL || 'debug');
+const logger = new Logger(process.env.NODE_MESSENGER_SDK_LOG_LEVEL || process.env.HUBOT_LOG_LEVEL || 'debug');
 
 const tmpDownloadDir = Path.resolve(OS.tmpdir(), 'messenger-downloads');
 const tmpUploadDir = Path.resolve(OS.tmpdir(), 'messenger-uploads');
@@ -43,7 +43,7 @@ class Api {
     downloadAttachment(attachment, chatId, isGroup, isAux) {
         return new Promise(async (resolve) => {
             try {
-                Logger.debug("Api::downloadAttachment() ", attachment);
+                logger.debug("Api::downloadAttachment() ", attachment);
                 var attachmentData = new AttachmentData();
                 attachmentData.id = attachment["id"];
                 attachmentData.name = attachment["name"];
@@ -53,23 +53,23 @@ class Api {
                 attachmentData.isAux = isAux;
                 this.getAttachmentUrl(attachmentData, (urlSuccess, urlJson, urlCookie) => {
                     if(!urlSuccess) {
-                        Logger.error("Api::downloadAttachment() Unable to retrieve download url:", attachment);
+                        logger.error("Api::downloadAttachment() Unable to retrieve download url:", attachment);
                         resolve(null);
                         return;
                     }
                     var url = urlJson["link"];
                     this.download(url, attachmentData.name, attachmentData.mime, urlCookie, (downloadSuccess, downloadPath) => {
                         if(!downloadSuccess) {
-                            Logger.error("Api::downloadAttachment() Unable to download attachment:", url, attachment);
+                            logger.error("Api::downloadAttachment() Unable to download attachment:", url, attachment);
                             resolve(null);
                             return;
                         }
-                        Logger.debug("Api:downloadAttachment() Downloaded at " + downloadPath);
+                        logger.debug("Api:downloadAttachment() Downloaded at " + downloadPath);
                         resolve(downloadPath);
                     });
                 });
             } catch(err) {
-                Logger.error(err);
+                logger.error(err);
                 resolve(null);
             }
         });
@@ -93,7 +93,7 @@ class Api {
     downloadChatPdf(filename, startDate, endDate, chatId, isGroup, isAux) {
         return new Promise(async (resolve) => {
             try {
-                Logger.debug("Api::downloadChatPdf()");
+                logger.debug("Api::downloadChatPdf()");
                 var pdfData = new PdfData();
                 pdfData.startDate = startDate;
                 pdfData.endDate = endDate;
@@ -102,23 +102,23 @@ class Api {
                 pdfData.isAux = isAux;
                 this.getChatPdfUrl(pdfData, (urlSuccess, urlJson, urlCookie) => {
                     if(!urlSuccess) {
-                        Logger.error("Api::downloadChatPdf() Unable to retrieve download url");
+                        logger.error("Api::downloadChatPdf() Unable to retrieve download url");
                         resolve(null);
                         return;
                     }
                     var url = urlJson["link"];
                     this.download(url, filename, "application/pdf", urlCookie, (downloadSuccess, downloadPath) => {
                         if(!downloadSuccess) {
-                            Logger.error("Api::downloadChatPdf() Unable to download pdf:", url);
+                            logger.error("Api::downloadChatPdf() Unable to download pdf:", url);
                             resolve(null);
                             return;
                         }
-                        Logger.debug("Api:downloadChatPdf() Downloaded at " + downloadPath);
+                        logger.debug("Api:downloadChatPdf() Downloaded at " + downloadPath);
                         resolve(downloadPath);
                     });
                 });
             } catch(err) {
-                Logger.error(err);
+                logger.error(err);
                 resolve(null);
             }
         });
@@ -172,7 +172,7 @@ class Api {
         } else if(inviteUserData.inviteType == "private_user") {
             this.post("users/invite/private", invitePostJson, callback, inviteUsersData.overrideToken);
         } else {
-            Logger.error("Api::invite() Unknown invite type on invite: \"" + inviteUserData.inviteType + "\"")
+            logger.error("Api::invite() Unknown invite type on invite: \"" + inviteUserData.inviteType + "\"")
             callback(false, null);
         }
     }
@@ -360,7 +360,7 @@ class Api {
     }
 
     sendMessage(messageData, callback) {
-        Logger.debug("Api::sendMessage() ", messageData);
+        logger.debug("Api::sendMessage() ", messageData);
         var messagePostData = {};
         var methodPrefix = "";
         if(messageData.isAux) {
@@ -494,7 +494,7 @@ class Api {
                                 }
                             }
                             if(exclude) {
-                                Logger.debug("Api::completeMentions() Ignored message user member as mention");
+                                logger.debug("Api::completeMentions() Ignored message user member as mention");
                                 continue;
                             }
                         }
@@ -530,58 +530,58 @@ class Api {
     }
 
     delete(deleteUrl, deleteJson, callback, overrideToken) {
-        Logger.debug("Api::delete() >> " + deleteUrl + ": " + deleteJson);
+        logger.debug("Api::delete() >> " + deleteUrl + ": " + deleteJson);
         var token = overrideToken || this.apiToken;
         if(token == null || token == "") {
-            Logger.error("Api::delete() API token not set");
+            logger.error("Api::delete() API token not set");
             callback(false, null);
             return;
         }
         try {
             this.http(this.apiUrl + deleteUrl, token).delete(deleteJson)((err, resp, body) => {
                 if(!resp) {
-                    Logger.error("Api::delete() << " + deleteUrl + ": " + err);
+                    logger.error("Api::delete() << " + deleteUrl + ": " + err);
                     callback(false, null);
                 } else if(resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
-                    Logger.debug("Api::delete() << " + deleteUrl + ": " + resp.statusCode + ": " + body);
+                    logger.debug("Api::delete() << " + deleteUrl + ": " + resp.statusCode + ": " + body);
                     var json;
                     if(body && body !== "") {
                         json = JSON.parse(body);
                     }
                     callback(true, json);
                 } else {
-                    Logger.error("Api::delete() << " + deleteUrl + ": " + resp.statusCode + ": " + body);
+                    logger.error("Api::delete() << " + deleteUrl + ": " + resp.statusCode + ": " + body);
                     callback(false, null);
                 }
             });
         } catch(exception) {
-            Logger.error("Api::delete() << " + deleteUrl + ": " + exception);
+            logger.error("Api::delete() << " + deleteUrl + ": " + exception);
             callback(false, null);
         }
     }
 
     get(getUrl, callback, overrideToken) {
-        Logger.debug("Api::get() >> " + getUrl);
+        logger.debug("Api::get() >> " + getUrl);
         var token = overrideToken || this.apiToken;
         if(token == null || token == "") {
-            Logger.error("Api::get() API token not set");
+            logger.error("Api::get() API token not set");
             callback(false, null);
             return;
         }
         try {
             this.http(this.apiUrl + getUrl, token).get()((err, resp, body) => {
                 if(!resp) {
-                    Logger.error("Api::get() << " + getUrl + ": " + err);
+                    logger.error("Api::get() << " + getUrl + ": " + err);
                     callback(false, null);
                 } else if(resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
-                    Logger.debug("Api::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
+                    logger.debug("Api::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
                     var json;
                     if(body && body !== "") {
                         json = JSON.parse(body);
                     }
                     callback(true, json);
                 } else if (resp.statusCode === 302) {
-                    Logger.debug("Api::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
+                    logger.debug("Api::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
                     var json;
                     if(body && body !== "") {
                         json = JSON.parse(body);
@@ -589,52 +589,52 @@ class Api {
                     var cookie = resp.headers["set-cookie"];
                     callback(true, json, cookie);
                 } else {
-                    Logger.error("Api::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
+                    logger.error("Api::get() << " + getUrl + ": " + resp.statusCode + ": " + body);
                     callback(false, null);
                 }
             });
         } catch(exception) {
-            Logger.error("Api::get() << " + getUrl + ": " + exception);
+            logger.error("Api::get() << " + getUrl + ": " + exception);
             callback(false, null);
         }
     }
 
     post(postUrl, postJson, callback, overrideToken) {
-        Logger.debug("Api::post() >> " + postUrl + ": " + postJson);
+        logger.debug("Api::post() >> " + postUrl + ": " + postJson);
         var token = overrideToken || this.apiToken;
         if(token == null || token == "") {
-            Logger.error("Api::post() API token not set");
+            logger.error("Api::post() API token not set");
             callback(false, null);
             return;
         }
         try {
             this.http(this.apiUrl + postUrl, token).post(postJson)((err, resp, body) => {
                 if(!resp) {
-                    Logger.error("Api::post() << " + postUrl + ": " + err);
+                    logger.error("Api::post() << " + postUrl + ": " + err);
                     callback(false, null);
                 } else if(resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
-                    Logger.debug("Api::post() << " + postUrl + ": " + resp.statusCode + ": " + body);
+                    logger.debug("Api::post() << " + postUrl + ": " + resp.statusCode + ": " + body);
                     var json;
                     if(body && body !== "") {
                         json = JSON.parse(body);
                     }
                     callback(true, json);
                 } else {
-                    Logger.error("Api::post() << " + postUrl + ": " + resp.statusCode + ": " + body);
+                    logger.error("Api::post() << " + postUrl + ": " + resp.statusCode + ": " + body);
                     callback(false, null);
                 }
             });
         } catch(exception) {
-            Logger.error("Api::post() << " + postUrl + ": " + exception);
+            logger.error("Api::post() << " + postUrl + ": " + exception);
             callback(false, null);
         }
     }
 
     postMultipart(postUrl, postData, fileParameter, filePaths, callback, overrideToken) {
-        Logger.debug("Api::postMultipart() >> " + postUrl + " formData: " + postData + " filePaths: ", filePaths);
+        logger.debug("Api::postMultipart() >> " + postUrl + " formData: " + postData + " filePaths: ", filePaths);
         var token = overrideToken || this.apiToken;
         if(token == null || token == "") {
-            Logger.error("Api::postMultipart() API token not set");
+            logger.error("Api::postMultipart() API token not set");
             callback(false, null);
             return;
         }
@@ -648,19 +648,19 @@ class Api {
             var filePath = filePaths[i];
             try {
                 if(!FileSystem.existsSync(filePath)) {
-                    Logger.error("Api::postMultipart() File does not exist: " + filePath);
+                    logger.error("Api::postMultipart() File does not exist: " + filePath);
                     callback(false, null);
                     return;
                 }
                 var stat = FileSystem.statSync(filePath);
                 if(stat["size"] === 0) {
-                    Logger.error("Api::postMultipart() File is empty: " + filePath);
+                    logger.error("Api::postMultipart() File is empty: " + filePath);
                     callback(false, null);
                     return;
                 }
                 formData.append(fileParameter, FileSystem.createReadStream(filePath));
             } catch(err) {
-                Logger.error("Api::postMultipart() Error reading file: " + filePath, err);
+                logger.error("Api::postMultipart() Error reading file: " + filePath, err);
                 callback(false, null);
                 return;
             }
@@ -674,7 +674,7 @@ class Api {
             path: "/" + this.apiVersion + "/" + postUrl,
             headers: headers}, function(err, res) {
             if(err || res == null) {
-                Logger.debug("Api::postMultipart() << " + postUrl + ": " + err);
+                logger.debug("Api::postMultipart() << " + postUrl + ": " + err);
                 callback(false, null);
                 return;
             }
@@ -686,14 +686,14 @@ class Api {
             // Incoming data ended
             res.on('end', function() {
                 if(res.statusCode === 200 || res.statusCode === 201 || res.statusCode === 204 || res.statusCode === 304) {
-                    Logger.debug("Api::postMultipart() << " + postUrl + ": " + res.statusCode + ": " + body);
+                    logger.debug("Api::postMultipart() << " + postUrl + ": " + res.statusCode + ": " + body);
                     var json;
                     if(body && body !== "") {
                         json = JSON.parse(body);
                     }
                     callback(true, json);
                 } else {
-                    Logger.error("Api::postMultipart() << " + postUrl + ": " + res.statusCode + ": " + body);
+                    logger.error("Api::postMultipart() << " + postUrl + ": " + res.statusCode + ": " + body);
                     callback(false, null);
                 }
             });
@@ -701,32 +701,32 @@ class Api {
     }
 
     put(putUrl, putJson, callback, overrideToken) {
-        Logger.debug("Api::put() >> " + putUrl + ": " + putJson);
+        logger.debug("Api::put() >> " + putUrl + ": " + putJson);
         var token = overrideToken || this.apiToken;
         if(token == null || token == "") {
-            Logger.error("Api::put() API token not set");
+            logger.error("Api::put() API token not set");
             callback(false, null);
             return;
         }
         try {
             this.http(this.apiUrl + putUrl, token).put(putJson)((err, resp, body) => {
                 if(!resp) {
-                    Logger.error("Api::put() << " + putUrl + ": " + err);
+                    logger.error("Api::put() << " + putUrl + ": " + err);
                     callback(false, null);
                 } else if(resp.statusCode === 200 || resp.statusCode === 201 || resp.statusCode === 204 || resp.statusCode === 304) {
-                    Logger.debug("Api::put() << " + putUrl + ": " + resp.statusCode + ": " + body);
+                    logger.debug("Api::put() << " + putUrl + ": " + resp.statusCode + ": " + body);
                     var json;
                     if(body && body !== "") {
                         json = JSON.parse(body);
                     }
                     callback(true, json);
                 } else {
-                    Logger.error("Api::put() << " + putUrl + ": " + resp.statusCode + ": " + body);
+                    logger.error("Api::put() << " + putUrl + ": " + resp.statusCode + ": " + body);
                     callback(false, null);
                 }
             });
         } catch(exception) {
-            Logger.error("Api::put() << " + putUrl + ": " + exception);
+            logger.error("Api::put() << " + putUrl + ": " + exception);
             callback(false, null);
         }
     }
@@ -735,7 +735,7 @@ class Api {
         var tmpDownloadPath = tmpDownloadDir + "/" + UuidV1();
         Mkdirp(tmpDownloadPath, (mkdirError) => {
             if(mkdirError != null) {
-                Logger.error("Api::getTmpDownloadPath() Unable to create temporary folder: " + tmpDownloadPath)
+                logger.error("Api::getTmpDownloadPath() Unable to create temporary folder: " + tmpDownloadPath)
                 callback(false, null);
                 return;
             }
@@ -747,7 +747,7 @@ class Api {
         var tmpUploadPath = tmpUploadDir + "/" + UuidV1();
         Mkdirp(tmpUploadPath, (mkdirError) => {
             if(mkdirError != null) {
-                Logger.error("Api::getTmpUploadPath() Unable to create temporary folder: " + tmpUploadPath)
+                logger.error("Api::getTmpUploadPath() Unable to create temporary folder: " + tmpUploadPath)
                 callback(false, null);
                 return;
             }
@@ -756,10 +756,10 @@ class Api {
     }
 
     download(url, name, mime, cookie, callback, overrideToken) {
-        Logger.debug("Api::download() >> " + url + " name: " + name + " mime: " + mime + " cookie: " + cookie);
+        logger.debug("Api::download() >> " + url + " name: " + name + " mime: " + mime + " cookie: " + cookie);
         var token = overrideToken || this.apiToken;
         if(token == null || token == "") {
-            Logger.error("Api::download() API token not set");
+            logger.error("Api::download() API token not set");
             callback(false, null);
             return;
         }
@@ -767,7 +767,7 @@ class Api {
 
         this.getTmpDownloadPath((success, tmpDownloadPath) => {
             if(!success) {
-                Logger.error("Api::download() Unable to create temporary folder: " + tmpDownloadPath)
+                logger.error("Api::download() Unable to create temporary folder: " + tmpDownloadPath)
                 return;
             }
 
@@ -789,7 +789,7 @@ class Api {
             });
 
             req.on('error', function(err) {
-                Logger.debug("Api::download() << " + url + ": " + err);
+                logger.debug("Api::download() << " + url + ": " + err);
                 callback(false, null);
             });
 
@@ -797,10 +797,10 @@ class Api {
                 if(res == null) {
                     callback(false, null);
                 } else if(res.statusCode == 200) {
-                    Logger.debug("Api::download() << " + url + ": " + res.statusCode);
+                    logger.debug("Api::download() << " + url + ": " + res.statusCode);
                     callback(true, path);
                 } else {
-                    Logger.error("Api::download() << " + url + ": " + res.statusCode);
+                    logger.error("Api::download() << " + url + ": " + res.statusCode);
                     callback(false, null);
                 }
             });
@@ -820,21 +820,21 @@ class Api {
         this.apiVersion = version || process.env.NODE_ALTERDESK_VERSION || "v1";
         this.apiPort = port || process.env.NODE_ALTERDESK_PORT || 443;
         this.apiUrl = this.apiProtocol + "://" + this.apiDomain + "/" + this.apiVersion + "/";
-        Logger.debug("Api::configure() URL: " + this.apiUrl + " Port: " + this.apiPort + " Token: " + this.apiToken);
+        logger.debug("Api::configure() URL: " + this.apiUrl + " Port: " + this.apiPort + " Token: " + this.apiToken);
 
         this.httpOptions = {};
         this.httpOptions.port = this.apiPort;
 
         if(this.apiToken == null || this.apiToken == "") {
-            Logger.error("Api::configure() No API token is set");
+            logger.error("Api::configure() No API token is set");
             return;
         }
     }
 
     isCoworker(userId, checkUser, callback) {
-        Logger.debug("Api::isCoworker() userId: " + userId);
+        logger.debug("Api::isCoworker() userId: " + userId);
         if(checkUser == null) {
-            Logger.error("Api::isCoworker() checkUser is null");
+            logger.error("Api::isCoworker() checkUser is null");
             callback(false);
             return;
         }
@@ -842,14 +842,14 @@ class Api {
     }
 
     isUserFromCompany(userId, companyId, callback) {
-        Logger.debug("Api::isUserFromCompany() userId: " + userId + " companyId: " + companyId);
+        logger.debug("Api::isUserFromCompany() userId: " + userId + " companyId: " + companyId);
         if(userId == null) {
-            Logger.error("Api::isUserFromCompany() userId is null");
+            logger.error("Api::isUserFromCompany() userId is null");
             callback(false);
             return;
         }
         if(companyId == null) {
-            Logger.error("Api::isUserFromCompany() companyId is null");
+            logger.error("Api::isUserFromCompany() companyId is null");
             callback(false);
             return;
         }
@@ -858,10 +858,10 @@ class Api {
             if(success) {
                 var userCompanyId = json["company_id"];
                 var isFromCompany = userCompanyId != null && companyId == userCompanyId;
-                Logger.debug("Api::isUserFromCompany() isUserFromCompany: " + isFromCompany + " companyId: " + userCompanyId);
+                logger.debug("Api::isUserFromCompany() isUserFromCompany: " + isFromCompany + " companyId: " + userCompanyId);
                 callback(isFromCompany);
             } else {
-                Logger.error("Api::isUserFromCompany() Unable to retrieve user by id: " + userId);
+                logger.error("Api::isUserFromCompany() Unable to retrieve user by id: " + userId);
                 callback(false);
             }
         });
