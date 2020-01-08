@@ -1,5 +1,9 @@
-# Node Messenger SDK
+# Node Messenger SDK(DEPRECATED)
 Messenger SDK for [API](https://api.alterdesk.com/documentation) calls from a node project.
+
+## Deprecated
+This project is deprecated and functionality was merged in [hubot-questionnaire-framework](https://github.com/Alterdesk/hubot-questionnaire-framework)
+in this [class](https://github.com/Alterdesk/hubot-questionnaire-framework/blob/master/src/clients/messenger-client.js)
 
 Dependencies
 * [form-data](https://github.com/form-data/form-data)
