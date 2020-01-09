@@ -19,6 +19,6 @@
     "request": "^2.83.0",
     "scoped-http-client": "^0.11.0",
     "uuid": "^3.2.1",
-    "node-messenger-log": "git+ssh://git@npm.gitlab.alterdesk.com:zaurus/node-messenger-log.git"
+    "node-messenger-log": "https://github.com/Alterdesk/node-messenger-log.git"
   }
 }
